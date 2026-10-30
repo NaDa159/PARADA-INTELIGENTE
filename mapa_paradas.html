@@ -1,0 +1,647 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101b2d">
+  <title>Ônibus de Erechim | Mapa e linhas</title>
+  <link rel="stylesheet" href="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.css">
+  <style>
+    :root {
+      color-scheme: light;
+      --ink: #15243a;
+      --muted: #718097;
+      --line: #e5eaf0;
+      --panel: #ffffff;
+      --canvas: #f2f5f8;
+      --navy: #101b2d;
+      --green: #16a477;
+      --orange: #ed982d;
+      --red: #dd5260;
+      --shadow: 0 12px 34px rgba(17, 31, 52, .14);
+      font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    html, body { width: 100%; min-height: 100%; margin: 0; }
+    body { color: var(--ink); background: var(--canvas); }
+    button, textarea { font: inherit; }
+    button { color: inherit; }
+    .app-shell {
+      min-height: 100vh;
+      min-height: 100dvh;
+      display: grid;
+      grid-template-rows: auto minmax(300px, 1fr) auto;
+      overflow: hidden;
+    }
+    .top-area {
+      position: relative;
+      z-index: 500;
+      color: #f6f8fb;
+      background: var(--navy);
+      box-shadow: 0 5px 18px rgba(15, 28, 46, .13);
+    }
+    .brand-row {
+      display: flex;
+      min-height: 66px;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      padding: 12px clamp(16px, 4vw, 44px) 8px;
+    }
+    .brand {
+      display: flex;
+      min-width: 0;
+      align-items: center;
+      gap: 11px;
+      color: inherit;
+      text-decoration: none;
+    }
+    .brand-symbol {
+      display: grid;
+      width: 38px;
+      height: 38px;
+      flex: 0 0 auto;
+      place-items: center;
+      border-radius: 13px;
+      color: #102135;
+      background: #c5f4e2;
+    }
+    .brand-symbol svg { width: 22px; height: 22px; }
+    .brand-copy { min-width: 0; }
+    .brand-name { margin: 0; font-size: 15px; font-weight: 760; letter-spacing: -.02em; }
+    .brand-caption { margin: 2px 0 0; color: #aab7c8; font-size: 11px; }
+    .demo-badge {
+      display: inline-flex;
+      flex: 0 0 auto;
+      align-items: center;
+      gap: 7px;
+      padding: 7px 10px;
+      border: 1px solid rgba(225, 237, 250, .14);
+      border-radius: 999px;
+      color: #c6d3e2;
+      font-size: 10px;
+      font-weight: 750;
+      letter-spacing: .08em;
+      text-transform: uppercase;
+    }
+    .demo-dot { width: 7px; height: 7px; border-radius: 50%; background: #f3b74f; box-shadow: 0 0 0 4px rgba(243, 183, 79, .12); }
+    .arrivals-section { padding: 6px clamp(16px, 4vw, 44px) 17px; }
+    .arrival-heading {
+      display: flex;
+      align-items: end;
+      justify-content: space-between;
+      gap: 12px;
+      margin: 0 0 11px;
+    }
+    .arrival-heading h1 { margin: 0; font-size: clamp(15px, 2vw, 19px); font-weight: 720; letter-spacing: -.025em; }
+    .arrival-heading p { margin: 0; color: #aab7c8; font-size: 11px; white-space: normal; }
+    .arrival-list {
+      display: grid;
+      grid-auto-columns: minmax(205px, 245px);
+      grid-auto-flow: column;
+      gap: 10px;
+      overflow-x: auto;
+      overscroll-behavior-inline: contain;
+      padding: 1px 1px 5px;
+      scrollbar-width: thin;
+      scrollbar-color: #4b5c71 transparent;
+    }
+    .arrival-card {
+      width: 100%;
+      min-height: 91px;
+      padding: 11px 13px;
+      border: 1px solid rgba(224, 234, 246, .13);
+      border-radius: 13px;
+      background: rgba(255, 255, 255, .075);
+      color: inherit;
+      text-align: left;
+      cursor: pointer;
+      transition: border-color .15s ease, background .15s ease;
+    }
+    .arrival-card:hover, .arrival-card.selected { border-color: rgba(197, 244, 226, .7); background: rgba(255, 255, 255, .14); }
+    .arrival-card-top, .arrival-card-bottom { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+    .route-line { display: flex; min-width: 0; align-items: center; gap: 8px; }
+    .route-number { display: inline-grid; min-width: 40px; height: 27px; place-items: center; border-radius: 8px; color: #132238; background: #d4f5e8; font-size: 12px; font-weight: 850; }
+    .route-destination { overflow: hidden; color: #f3f6fa; font-size: 13px; font-weight: 660; text-overflow: ellipsis; white-space: nowrap; }
+    .arrival-time { color: white; font-size: 16px; font-weight: 780; white-space: nowrap; }
+    .arrival-card-bottom { margin-top: 10px; }
+    .arrival-caption { color: #aab7c8; font-size: 10px; }
+    .status-pill { display: inline-flex; align-items: center; gap: 5px; padding: 4px 8px; border-radius: 999px; font-size: 10px; font-weight: 760; white-space: nowrap; }
+    .status-pill::before { width: 6px; height: 6px; border-radius: 50%; background: currentColor; content: ""; }
+    .status-normal { color: #9ae5c9; background: rgba(22, 164, 119, .15); }
+
+    .map-area { position: relative; min-height: 300px; overflow: hidden; background: #dce6ec; }
+    #map { position: absolute; inset: 0; z-index: 1; width: 100%; height: 100%; background: #dce6ec; }
+    .maplibregl-map { font: inherit; }
+    .map-card {
+      position: absolute;
+      z-index: 400;
+      top: 17px;
+      left: 17px;
+      width: min(265px, calc(100% - 34px));
+      padding: 13px 15px;
+      border: 1px solid rgba(231, 236, 241, .9);
+      border-radius: 14px;
+      background: rgba(255, 255, 255, .96);
+      box-shadow: var(--shadow);
+      pointer-events: none;
+    }
+    .eyebrow { margin: 0 0 4px; color: #75849a; font-size: 9px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+    .map-card h2 { overflow: hidden; margin: 0; font-size: 15px; font-weight: 760; letter-spacing: -.02em; text-overflow: ellipsis; white-space: nowrap; }
+    .map-state { display: flex; align-items: center; gap: 7px; margin-top: 9px; color: #5d6c80; font-size: 11px; }
+    .map-state-dot { width: 7px; height: 7px; border-radius: 50%; background: #edae42; box-shadow: 0 0 0 4px #fff3d8; }
+    .map-report-link { display: inline-block; margin-top: 9px; color: #425d7e; font-size: 10px; pointer-events: auto; text-decoration-thickness: 1px; text-underline-offset: 2px; }
+    .map-legend {
+      position: absolute;
+      z-index: 400;
+      bottom: 16px;
+      left: 16px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      padding: 7px 9px;
+      border: 1px solid rgba(231, 236, 241, .9);
+      border-radius: 10px;
+      background: rgba(255, 255, 255, .95);
+      box-shadow: 0 4px 14px rgba(17, 31, 52, .1);
+      pointer-events: none;
+    }
+    .legend-item { display: inline-flex; align-items: center; gap: 5px; color: #596a80; font-size: 9px; font-weight: 650; }
+    .legend-dot { width: 7px; height: 7px; border-radius: 50%; }
+    .legend-dot.normal { background: #2358d8; }
+    .legend-dot.crowded { background: #16a477; }
+    .legend-dot.delay { background: #ed982d; }
+    .stop-pin {
+      display: grid;
+      width: 43px;
+      height: 43px;
+      place-items: center;
+      border: 3px solid #fff;
+      border-radius: 15px 15px 15px 5px;
+      background: var(--pin-color, var(--green));
+      box-shadow: 0 5px 13px rgba(15, 33, 54, .3);
+      transform: rotate(-45deg);
+    }
+    .stop-pin svg { width: 21px; height: 21px; transform: rotate(45deg); }
+    .stop-pin.normal { --pin-color: #2358d8; }
+    .stop-pin.crowded { --pin-color: #16a477; }
+    .stop-pin.delay { --pin-color: #ed982d; }
+    .bus-pin {
+      display: grid;
+      width: 42px;
+      height: 42px;
+      place-items: center;
+      border: 3px solid #fff;
+      border-radius: 50%;
+      background: #2358d8;
+      box-shadow: 0 5px 14px rgba(15, 33, 54, .32), 0 0 0 5px rgba(35, 88, 216, .17);
+      font-size: 21px;
+    }
+    .maplibregl-popup-content { border-radius: 12px; font-family: inherit; }
+    .maplibregl-ctrl-group { overflow: hidden; border: 1px solid rgba(220, 227, 235, .9) !important; border-radius: 10px !important; box-shadow: 0 4px 13px rgba(17, 31, 52, .14) !important; }
+    .stop-popup-title { margin: 0 0 4px; color: #17273d; font-size: 13px; font-weight: 760; }
+    .stop-popup-status { margin: 0; color: #687890; font-size: 11px; line-height: 1.5; }
+    .route-itinerary { display: -webkit-box; overflow: hidden; margin: 8px 0 0; color: #64748b; font-size: 10px; line-height: 1.45; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+
+    .dashboard {
+      position: relative;
+      z-index: 450;
+      display: grid;
+      grid-template-columns: minmax(190px, 1.1fr) minmax(180px, 1fr) minmax(150px, .85fr) minmax(150px, .85fr);
+      gap: 11px;
+      padding: 13px clamp(16px, 4vw, 44px) calc(13px + env(safe-area-inset-bottom));
+      border-top: 1px solid var(--line);
+      background: #fff;
+    }
+    .weather-card, .sos-button, .quick-button {
+      min-height: 68px;
+      border: 1px solid var(--line);
+      border-radius: 13px;
+    }
+    .weather-card { display: flex; align-items: center; gap: 12px; padding: 10px 13px; background: #f8fafc; }
+    .weather-icon { display: grid; width: 42px; height: 42px; flex: 0 0 auto; place-items: center; border-radius: 12px; background: #e8f3ff; font-size: 23px; }
+    .weather-label { margin: 0 0 3px; color: #75849a; font-size: 10px; font-weight: 700; }
+    .weather-reading { margin: 0; color: var(--ink); font-size: 14px; font-weight: 750; }
+    .weather-temp { margin-right: 5px; font-size: 18px; font-weight: 820; }
+    .weather-source { margin: 3px 0 0; color: #8a97a8; font-size: 9px; }
+    .sos-button, .quick-button { display: flex; align-items: center; justify-content: center; gap: 9px; padding: 10px 12px; cursor: pointer; font-size: 12px; font-weight: 740; transition: transform .15s ease, box-shadow .15s ease, background .15s ease; }
+    .sos-button { border-color: #f3d5d9; color: #a83243; background: #fff5f5; }
+    .sos-button:hover { background: #ffeded; box-shadow: 0 5px 14px rgba(168, 50, 67, .1); }
+    .quick-button { color: #354760; background: white; }
+    .quick-button:hover { background: #f5f8fb; box-shadow: 0 5px 14px rgba(17, 31, 52, .08); }
+    .sos-button:active, .quick-button:active { transform: translateY(1px); }
+    .sos-button svg, .quick-button svg { width: 18px; height: 18px; flex: 0 0 auto; }
+    .quick-button.primary { border-color: #cbd9f7; color: #234db0; background: #f4f7ff; }
+    .toast {
+      position: fixed;
+      z-index: 1200;
+      right: 16px;
+      bottom: calc(104px + env(safe-area-inset-bottom));
+      max-width: min(360px, calc(100vw - 32px));
+      padding: 11px 14px;
+      border: 1px solid rgba(255,255,255,.14);
+      border-radius: 11px;
+      color: #f5f7fb;
+      background: #15243a;
+      box-shadow: var(--shadow);
+      font-size: 12px;
+      opacity: 0;
+      pointer-events: none;
+      transform: translateY(8px);
+      transition: opacity .2s ease, transform .2s ease;
+    }
+    .toast.visible { opacity: 1; transform: translateY(0); }
+    dialog {
+      width: min(430px, calc(100vw - 28px));
+      max-width: none;
+      padding: 0;
+      overflow: visible;
+      border: 0;
+      border-radius: 18px;
+      color: var(--ink);
+      background: transparent;
+    }
+    dialog::backdrop { background: rgba(12, 22, 38, .5); backdrop-filter: blur(3px); }
+    .dialog-card { position: relative; padding: 25px; border: 1px solid #e8edf3; border-radius: 18px; background: white; box-shadow: 0 24px 70px rgba(10, 22, 39, .26); }
+    .dialog-close { position: absolute; top: 13px; right: 13px; display: grid; width: 32px; height: 32px; place-items: center; border: 0; border-radius: 10px; color: #607087; background: #f2f5f8; cursor: pointer; font-size: 19px; }
+    .dialog-kicker { margin: 0 0 7px; color: #6d7d93; font-size: 10px; font-weight: 800; letter-spacing: .1em; text-transform: uppercase; }
+    .dialog-card h2 { margin: 0; font-size: 21px; letter-spacing: -.03em; }
+    .dialog-copy { margin: 9px 0 15px; color: #63728a; font-size: 13px; line-height: 1.55; }
+    .report-form[hidden] { display: none; }
+    .report-form label { display: block; margin: 0 0 7px; font-size: 11px; font-weight: 740; }
+    .report-form textarea { display: block; width: 100%; min-height: 92px; resize: vertical; padding: 10px 11px; border: 1px solid #dce3eb; border-radius: 10px; outline: none; color: var(--ink); background: #fbfcfd; font-size: 13px; }
+    .report-form textarea:focus { border-color: #7899e8; box-shadow: 0 0 0 3px rgba(65, 108, 203, .12); }
+    .dialog-note { margin: 13px 0 0; color: #8a97a8; font-size: 10px; line-height: 1.45; }
+    .dialog-submit { width: 100%; margin-top: 12px; padding: 11px 14px; border: 0; border-radius: 10px; color: white; background: #2455c6; cursor: pointer; font-size: 12px; font-weight: 760; }
+    .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
+    @media (min-width: 1100px) {
+      .app-shell { height: 100vh; height: 100dvh; }
+      .arrival-list { grid-auto-columns: minmax(220px, 1fr); }
+    }
+    @media (max-width: 760px) {
+      .arrival-heading { align-items: start; flex-direction: column; gap: 4px; }
+      .dashboard { grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); }
+      .weather-card, .sos-button { min-height: 66px; }
+      .quick-button { min-height: 54px; }
+    }
+    @media (max-width: 430px) {
+      .app-shell { grid-template-rows: auto minmax(280px, 1fr) auto; }
+      .brand-row { min-height: 59px; }
+      .brand-caption { font-size: 10px; }
+      .demo-badge { padding: 6px 8px; font-size: 9px; }
+      .arrival-heading { align-items: start; flex-direction: column; gap: 4px; }
+      .arrival-list { grid-auto-columns: minmax(195px, 79vw); }
+      .dashboard { gap: 8px; padding-top: 10px; }
+      .weather-card { padding: 9px; }
+      .sos-button { padding: 8px; font-size: 11px; }
+      .quick-button { gap: 6px; padding: 9px 7px; font-size: 10px; }
+      .map-card { top: 12px; left: 12px; width: min(245px, calc(100% - 24px)); }
+      .map-legend { bottom: 12px; left: 12px; gap: 5px; }
+    }
+    @media (prefers-reduced-motion: reduce) {
+      *, *::before, *::after { scroll-behavior: auto !important; transition-duration: .01ms !important; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app-shell">
+    <header class="top-area">
+      <div class="brand-row">
+        <a class="brand" href="#map" aria-label="Parada Inteligente, ir ao mapa">
+          <span class="brand-symbol" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none"><path d="M5 18V7.8C5 5.7 6.7 4 8.8 4h6.4C17.3 4 19 5.7 19 7.8V18M5 9h14M8 18v2m8-2v2M8.2 13h.1m7.4 0h.1" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M8 6.7h8v7H8z" fill="currentColor" opacity=".18"/></svg>
+          </span>
+          <span class="brand-copy">
+            <p class="brand-name">Ônibus de Erechim</p>
+            <p class="brand-caption">Mapa urbano · Erechim, RS</p>
+          </span>
+        </a>
+        <span class="demo-badge"><span class="demo-dot"></span>Horários publicados</span>
+      </div>
+      <section class="arrivals-section" aria-labelledby="arrivals-title">
+        <div class="arrival-heading">
+          <h1 id="arrivals-title">Linhas e saídas do Terminal Central</h1>
+          <p>Partidas de referência em dias úteis · consulte alterações no site oficial</p>
+        </div>
+        <div class="arrival-list" id="arrival-list" aria-live="polite"></div>
+      </section>
+    </header>
+
+    <main class="map-area" aria-label="Mapa principal das linhas de ônibus de Erechim">
+      <div id="map" role="application" aria-label="Mapa interativo da cidade"></div>
+      <section class="map-card" aria-label="Linha selecionada">
+        <p class="eyebrow">Erechim · Rio Grande do Sul</p>
+        <h2 id="station-name">Terminal Urbano Central</h2>
+        <div class="map-state"><span class="map-state-dot"></span><span id="map-state-text">Traçado aproximado da linha</span></div>
+        <p class="route-itinerary" id="route-itinerary"></p>
+        <a class="map-report-link" href="https://urbanoerechim.com.br/" target="_blank" rel="noopener noreferrer">Consultar fonte oficial: Gaurama ↗</a>
+      </section>
+      <div class="map-legend" aria-label="Legenda do mapa">
+        <span class="legend-item"><i class="legend-dot normal"></i>Terminal</span>
+        <span class="legend-item"><i class="legend-dot crowded"></i>Bairro / referência</span>
+        <span class="legend-item"><i class="legend-dot delay" id="route-legend-dot"></i>Rota selecionada</span>
+      </div>
+    </main>
+
+    <footer class="dashboard" aria-label="Informações e ações rápidas">
+      <section class="weather-card" aria-live="polite" aria-label="Previsão do tempo">
+        <span class="weather-icon" id="weather-icon" aria-hidden="true">🌤️</span>
+        <div>
+          <p class="weather-label">Tempo agora</p>
+          <p class="weather-reading"><span class="weather-temp" id="weather-temp">22°C</span><span id="weather-description">Parcialmente nublado</span></p>
+          <p class="weather-source" id="weather-source">A obter previsão…</p>
+        </div>
+      </section>
+      <button class="sos-button" id="sos-button" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M12 8v5m0 3h.01M10 3.8 2.8 17a2 2 0 0 0 1.75 3h14.9a2 2 0 0 0 1.75-3L14 3.8a2.3 2.3 0 0 0-4 0Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ajuda / Suporte SOS
+      </button>
+      <button class="quick-button primary" id="official-button" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M20 7v5h-5M4 17v-5h5m10-1a7 7 0 0 0-12-4L4 9m16 6-3 2a7 7 0 0 1-12-4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Ver horários oficiais
+      </button>
+      <button class="quick-button" id="report-button" type="button">
+        <svg viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M5 20V5m0 1c5-4 9 4 14 0v9c-5 4-9-4-14 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Reportar problema
+      </button>
+    </footer>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+  <dialog id="action-dialog" aria-labelledby="dialog-title">
+    <div class="dialog-card">
+      <button class="dialog-close" id="dialog-close" type="button" aria-label="Fechar">×</button>
+      <p class="dialog-kicker" id="dialog-kicker">Ajuda</p>
+      <h2 id="dialog-title">Suporte</h2>
+      <p class="dialog-copy" id="dialog-copy"></p>
+      <form class="report-form" id="report-form" hidden>
+        <label for="report-description">O que aconteceu?</label>
+        <textarea id="report-description" name="description" maxlength="500" required placeholder="Descreva a linha, a parada ou o problema…"></textarea>
+        <button class="dialog-submit" type="submit">Registar neste protótipo</button>
+      </form>
+      <p class="dialog-note" id="dialog-note"></p>
+    </div>
+  </dialog>
+
+  <script src="https://unpkg.com/maplibre-gl@5.12.0/dist/maplibre-gl.js"></script>
+  <script>
+    "use strict";
+
+    const STOPS = [{"categoria": "terminal", "latitude": -27.6339, "longitude": -52.2739, "nome": "Terminal Urbano Central", "observacao": "Localiza\u00e7\u00e3o aproximada para refer\u00eancia no mapa"}, {"categoria": "referencia", "latitude": -27.6339, "longitude": -52.2724, "nome": "Avenida 7 de Setembro", "observacao": "Refer\u00eancia aproximada do centro"}, {"categoria": "referencia", "latitude": -27.6355, "longitude": -52.268, "nome": "Avenida 15 de Novembro", "observacao": "Refer\u00eancia aproximada do logradouro"}, {"categoria": "referencia", "latitude": -27.61306, "longitude": -52.22902, "nome": "URI Campus Erechim", "observacao": "Campus universit\u00e1rio"}, {"categoria": "referencia", "latitude": -27.65106, "longitude": -52.2524, "nome": "Estevam Carraro", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.66028, "longitude": -52.24891, "nome": "Rio Tigre", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.6511, "longitude": -52.24219, "nome": "Distrito Industrial", "observacao": "Localiza\u00e7\u00e3o aproximada do distrito"}, {"categoria": "referencia", "latitude": -27.6505, "longitude": -52.2415, "nome": "Comil", "observacao": "Refer\u00eancia aproximada do distrito industrial"}, {"categoria": "referencia", "latitude": -27.6485, "longitude": -52.24805, "nome": "Rua Dr. Jo\u00e3o Caruso", "observacao": "Refer\u00eancia aproximada do logradouro"}, {"categoria": "referencia", "latitude": -27.64743, "longitude": -52.22171, "nome": "Poltronieri", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.65021, "longitude": -52.22145, "nome": "Liberdade", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.64652, "longitude": -52.23299, "nome": "Parque Reden\u00e7\u00e3o", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.64128, "longitude": -52.24027, "nome": "Atl\u00e2ntico", "observacao": "Refer\u00eancia aproximada do bairro"}, {"categoria": "referencia", "latitude": -27.6348, "longitude": -52.265, "nome": "Rua Sergipe", "observacao": "Refer\u00eancia aproximada do logradouro"}, {"categoria": "referencia", "latitude": -27.62879, "longitude": -52.24143, "nome": "Copas Verdes", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.6235, "longitude": -52.235, "nome": "Novo Horizonte", "observacao": "Localiza\u00e7\u00e3o esquem\u00e1tica aproximada"}, {"categoria": "referencia", "latitude": -27.64294, "longitude": -52.29974, "nome": "Tr\u00eas Vendas", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.63451, "longitude": -52.30753, "nome": "Jabuticabal", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.637, "longitude": -52.312, "nome": "Loteamento Cinco", "observacao": "Localiza\u00e7\u00e3o esquem\u00e1tica aproximada"}, {"categoria": "referencia", "latitude": -27.63814, "longitude": -52.31651, "nome": "Paiol Grande", "observacao": "Bairro de refer\u00eancia"}, {"categoria": "referencia", "latitude": -27.642, "longitude": -52.305, "nome": "Rua D. Durli", "observacao": "Localiza\u00e7\u00e3o esquem\u00e1tica aproximada"}];
+    const ROUTES = [{"coordenadas": [[-52.2739, -27.6339], [-52.2724, -27.6339], [-52.22902, -27.61306], [-52.2524, -27.65106], [-52.24891, -27.66028], [-52.24219, -27.6511], [-52.2415, -27.6505], [-52.2739, -27.6339]], "cor": "#2463eb", "dias": "Segunda a sexta", "id": "linha-18", "itinerario": "TERMINAL - AV. 7 - URI - E. CARRARO - RIO TIGRE - INDUSTRIAL - COMIL / AV. 7 - TERMINAL", "linha": "18", "pontos": ["Terminal Urbano Central", "Avenida 7 de Setembro", "URI Campus Erechim", "Estevam Carraro", "Rio Tigre", "Distrito Industrial", "Comil", "Terminal Urbano Central"], "resumo": "URI \u00b7 Estevam Carraro \u00b7 Rio Tigre", "saida": "06:00"}, {"coordenadas": [[-52.2739, -27.6339], [-52.2724, -27.6339], [-52.22902, -27.61306], [-52.24805, -27.6485], [-52.22171, -27.64743], [-52.22145, -27.65021], [-52.23299, -27.64652], [-52.24027, -27.64128], [-52.265, -27.6348], [-52.2739, -27.6339]], "cor": "#e58a22", "dias": "Segunda a sexta", "id": "linha-30", "itinerario": "TERMINAL - AV. 7 - URI - PARALELA - RUA DR. JO\u00c3O CARUSO - POLTRONIERI - LIBERDADE - P. REDEN\u00c7\u00c3O - ATL\u00c2NTICO - RUA SERGIPE - AV. 7 - TERMINAL", "linha": "30", "pontos": ["Terminal Urbano Central", "Avenida 7 de Setembro", "URI Campus Erechim", "Rua Dr. Jo\u00e3o Caruso", "Poltronieri", "Liberdade", "Parque Reden\u00e7\u00e3o", "Atl\u00e2ntico", "Rua Sergipe", "Terminal Urbano Central"], "resumo": "URI \u00b7 Poltronieri \u00b7 Parque Reden\u00e7\u00e3o \u00b7 Atl\u00e2ntico", "saida": "06:25"}, {"coordenadas": [[-52.2739, -27.6339], [-52.29974, -27.64294], [-52.30753, -27.63451], [-52.312, -27.637], [-52.31651, -27.63814], [-52.305, -27.642], [-52.29974, -27.64294], [-52.2739, -27.6339]], "cor": "#12a47a", "dias": "Segunda a sexta", "id": "linha-32", "itinerario": "TERMINAL - RUA ARATIBA - RUA IT\u00c1LIA - T. VENDAS - JABUTICABAL - LOT. CINCO - PAIOL GRANDE - RUA D. DURLI / TR\u00caS VENDAS - RUA IT\u00c1LIA - TERMINAL", "linha": "32", "pontos": ["Terminal Urbano Central", "Tr\u00eas Vendas", "Jabuticabal", "Loteamento Cinco", "Paiol Grande", "Rua D. Durli", "Tr\u00eas Vendas", "Terminal Urbano Central"], "resumo": "Tr\u00eas Vendas \u00b7 Jabuticabal \u00b7 Paiol Grande", "saida": "06:20"}, {"coordenadas": [[-52.2739, -27.6339], [-52.268, -27.6355], [-52.24143, -27.62879], [-52.235, -27.6235], [-52.24143, -27.62879], [-52.268, -27.6355], [-52.2739, -27.6339]], "cor": "#d94f63", "dias": "Segunda a sexta", "id": "linha-33", "itinerario": "TERMINAL - AV. 15 NOV - RUA PERNAMBUCO - RUA S. GUERRA - C. VERDES - N. HORIZONTE / RUA S. GUERRA - AV. 15 NOV - TERMINAL", "linha": "33", "pontos": ["Terminal Urbano Central", "Avenida 15 de Novembro", "Copas Verdes", "Novo Horizonte", "Copas Verdes", "Avenida 15 de Novembro", "Terminal Urbano Central"], "resumo": "Copas Verdes \u00b7 Novo Horizonte", "saida": "06:40"}];
+    const CITY_CENTER = [-27.6339, -52.2739];
+    const OPERATOR_URL = "https://urbanoerechim.com.br/";
+    let map = null;
+    let routeSource = null;
+    let busMarker = null;
+    let selectedRoute = ROUTES[0];
+    let segment = 0;
+    let progress = 0;
+
+    function showToast(message) {
+      const toast = document.getElementById("toast");
+      toast.textContent = message;
+      toast.classList.add("visible");
+      window.clearTimeout(showToast.timer);
+      showToast.timer = window.setTimeout(() => toast.classList.remove("visible"), 3800);
+    }
+
+    function renderRoutes() {
+      const list = document.getElementById("arrival-list");
+      list.replaceChildren();
+      ROUTES.forEach((route) => {
+        const card = document.createElement("button");
+        card.type = "button";
+        card.className = `arrival-card${route.id === selectedRoute.id ? " selected" : ""}`;
+        card.setAttribute("aria-pressed", String(route.id === selectedRoute.id));
+        card.setAttribute("aria-label", `Linha ${route.linha}, partida às ${route.saida}, ${route.dias}. ${route.itinerario}`);
+        const top = document.createElement("div");
+        top.className = "arrival-card-top";
+        const routeLabel = document.createElement("div");
+        routeLabel.className = "route-line";
+        const number = document.createElement("span");
+        number.className = "route-number";
+        number.textContent = route.linha;
+        const destination = document.createElement("span");
+        destination.className = "route-destination";
+        destination.textContent = route.resumo;
+        const departure = document.createElement("span");
+        departure.className = "arrival-time";
+        departure.textContent = route.saida;
+        routeLabel.append(number, destination);
+        top.append(routeLabel, departure);
+        const bottom = document.createElement("div");
+        bottom.className = "arrival-card-bottom";
+        const caption = document.createElement("span");
+        caption.className = "arrival-caption";
+        caption.textContent = "Partida de referência";
+        const days = document.createElement("span");
+        days.className = "status-pill status-normal";
+        days.textContent = route.dias;
+        bottom.append(caption, days);
+        card.append(top, bottom);
+        card.addEventListener("click", () => selectRoute(route.id));
+        list.append(card);
+      });
+    }
+
+    function selectRoute(routeId) {
+      const route = ROUTES.find((item) => item.id === routeId);
+      if (!route) return;
+      selectedRoute = route;
+      segment = 0;
+      progress = 0;
+      renderRoutes();
+      document.getElementById("route-legend-dot").style.backgroundColor = route.cor;
+      document.getElementById("station-name").textContent = `Linha ${route.linha} · saída ${route.saida}`;
+      document.getElementById("map-state-text").textContent = "Traçado aproximado · ônibus em simulação";
+      document.getElementById("route-itinerary").textContent = `Roteiro publicado: ${route.itinerario}`;
+      if (!map || !routeSource) return;
+      const points = route.coordenadas;
+      routeSource.setData({
+        type: "Feature",
+        properties: {},
+        geometry: { type: "LineString", coordinates: points }
+      });
+      map.setPaintProperty("bus-route-line", "line-color", route.cor);
+      busMarker.setLngLat(points[0]);
+      const bounds = new maplibregl.LngLatBounds();
+      points.forEach((point) => bounds.extend(point));
+      map.fitBounds(bounds, { padding: { top: 110, bottom: 75, left: 300, right: 45 }, maxZoom: 14 });
+    }
+
+    function stopIcon(stop) {
+      const isTerminal = stop.categoria === "terminal";
+      const tone = isTerminal ? "normal" : "crowded";
+      const html = '<div class="stop-pin ' + tone + '"><svg viewBox="0 0 24 24" fill="none"><path d="M5 18V7.8C5 5.7 6.7 4 8.8 4h6.4C17.3 4 19 5.7 19 7.8V18M5 9h14M8 18v2m8-2v2M8.2 13h.1m7.4 0h.1" stroke="white" stroke-width="1.8" stroke-linecap="round"/><path d="M8 6.7h8v3.8H8z" fill="white" opacity=".35"/></svg></div>';
+      const element = document.createElement("div");
+      element.innerHTML = html;
+      const marker = element.firstElementChild;
+      marker.setAttribute("aria-label", stop.categoria === "terminal" ? "Terminal de ônibus" : "Referência de bairro ou itinerário");
+      return marker;
+    }
+
+    function makeBusIcon() {
+      const element = document.createElement("div");
+      element.className = "bus-pin";
+      element.setAttribute("aria-label", "Ônibus em simulação");
+      element.textContent = "🚌";
+      return element;
+    }
+
+    function initializeMap() {
+      if (!window.maplibregl) {
+        document.getElementById("map-state-text").textContent = "Biblioteca do mapa indisponível; verifique a internet";
+        showToast("Não foi possível carregar MapLibre. Confirme a ligação à internet e reabra a página pelo servidor local.");
+        return;
+      }
+      map = new maplibregl.Map({
+        container: "map",
+        style: "https://tiles.openfreemap.org/styles/positron",
+        center: [CITY_CENTER[1], CITY_CENTER[0]],
+        zoom: 13,
+        attributionControl: { compact: false }
+      });
+      map.addControl(new maplibregl.NavigationControl({ showCompass: false }), "bottom-right");
+      let mapErrorShown = false;
+      map.on("error", (event) => {
+        if (mapErrorShown || !event.error) return;
+        mapErrorShown = true;
+        console.error("Erro ao carregar OpenFreeMap:", event.error);
+        document.getElementById("map-state-text").textContent = "Base indisponível; verifique a ligação à internet";
+        showToast("O mapa base não respondeu. Verifique a ligação à internet e recarregue a página.");
+      });
+
+      map.on("load", () => {
+        map.addSource("bus-route", {
+          type: "geojson",
+          data: {
+            type: "Feature",
+            properties: {},
+            geometry: { type: "LineString", coordinates: selectedRoute.coordenadas }
+          }
+        });
+        routeSource = map.getSource("bus-route");
+        map.addLayer({
+          id: "bus-route-line",
+          type: "line",
+          source: "bus-route",
+          layout: { "line-cap": "round", "line-join": "round" },
+          paint: { "line-color": selectedRoute.cor, "line-width": 4, "line-opacity": .85, "line-dasharray": [2, 2] }
+        });
+
+        STOPS.forEach((stop) => {
+          const title = document.createElement("p");
+          title.className = "stop-popup-title";
+          title.textContent = stop.nome;
+          const detail = document.createElement("p");
+          detail.className = "stop-popup-status";
+          detail.textContent = stop.observacao;
+          const content = document.createElement("div");
+          content.append(title, detail);
+          const popup = new maplibregl.Popup({ offset: 25, closeButton: false }).setDOMContent(content);
+          new maplibregl.Marker({ element: stopIcon(stop), anchor: "bottom" })
+            .setLngLat([stop.longitude, stop.latitude])
+            .setPopup(popup)
+            .addTo(map);
+        });
+
+        const points = selectedRoute.coordenadas;
+        busMarker = new maplibregl.Marker({ element: makeBusIcon(), anchor: "center" })
+          .setLngLat(points[0])
+          .addTo(map);
+        const bounds = new maplibregl.LngLatBounds();
+        points.forEach((point) => bounds.extend(point));
+        map.fitBounds(bounds, { padding: { top: 100, bottom: 70, left: 300, right: 45 }, maxZoom: 14 });
+
+        window.setInterval(() => {
+          const path = selectedRoute.coordenadas;
+          if (path.length < 2) return;
+          const start = path[segment];
+          const end = path[(segment + 1) % path.length];
+          progress += 0.008;
+          if (progress >= 1) {
+            progress = 0;
+            segment = (segment + 1) % path.length;
+          }
+          busMarker.setLngLat([
+            start[0] + (end[0] - start[0]) * progress,
+            start[1] + (end[1] - start[1]) * progress
+          ]);
+        }, 180);
+      });
+      window.setTimeout(() => map.resize(), 250);
+    }
+
+    const WEATHER_TEXT = new Map([
+      [0, ["Céu limpo", "☀️"]], [1, ["Maioritariamente limpo", "🌤️"]],
+      [2, ["Parcialmente nublado", "⛅"]], [3, ["Nublado", "☁️"]],
+      [45, ["Nevoeiro", "🌫️"]], [48, ["Nevoeiro", "🌫️"]],
+      [51, ["Chuvisco", "🌦️"]], [53, ["Chuvisco", "🌦️"]], [55, ["Chuvisco intenso", "🌧️"]],
+      [61, ["Chuva fraca", "🌧️"]], [63, ["Chuva", "🌧️"]], [65, ["Chuva forte", "🌧️"]],
+      [71, ["Neve fraca", "🌨️"]], [73, ["Neve", "🌨️"]], [75, ["Neve forte", "❄️"]],
+      [80, ["Aguaceiros", "🌦️"]], [81, ["Aguaceiros", "🌧️"]], [82, ["Aguaceiros fortes", "🌧️"]],
+      [95, ["Trovoada", "⛈️"]], [96, ["Trovoada com granizo", "⛈️"]], [99, ["Trovoada forte", "⛈️"]]
+    ]);
+
+    async function loadWeather() {
+      const url = new URL("https://api.open-meteo.com/v1/forecast");
+      url.search = new URLSearchParams({
+        latitude: String(CITY_CENTER[0]),
+        longitude: String(CITY_CENTER[1]),
+        current: "temperature_2m,weather_code",
+        timezone: "auto"
+      }).toString();
+      try {
+        const response = await fetch(url);
+        if (!response.ok) throw new Error("Falha ao obter a previsão");
+        const data = await response.json();
+        const current = data.current;
+        const weather = WEATHER_TEXT.get(Number(current.weather_code)) || ["Condição variável", "🌤️"];
+        document.getElementById("weather-temp").textContent = `${Math.round(current.temperature_2m)}°C`;
+        document.getElementById("weather-description").textContent = weather[0];
+        document.getElementById("weather-icon").textContent = weather[1];
+        document.getElementById("weather-source").textContent = "Condições atuais em Erechim · Open-Meteo";
+      } catch (error) {
+        document.getElementById("weather-source").textContent = "Previsão indisponível sem ligação";
+      }
+    }
+
+    renderRoutes();
+    selectRoute(selectedRoute.id);
+    initializeMap();
+    loadWeather();
+    document.getElementById("official-button").addEventListener("click", () => {
+      window.open(OPERATOR_URL, "_blank", "noopener,noreferrer");
+    });
+
+    const dialog = document.getElementById("action-dialog");
+    const reportForm = document.getElementById("report-form");
+    function openDialog(mode) {
+      const isReport = mode === "report";
+      document.getElementById("dialog-kicker").textContent = isReport ? "Reporte de transporte" : "Ajuda e segurança";
+      document.getElementById("dialog-title").textContent = isReport ? "Reportar um problema" : "Ajuda / Suporte SOS";
+      document.getElementById("dialog-copy").textContent = isReport
+        ? "Descreva um problema nesta parada ou numa linha."
+        : "Se estiver em perigo, contacte os serviços de emergência locais. Este botão não envia a sua localização nem liga automaticamente.";
+      document.getElementById("dialog-note").textContent = isReport
+        ? "Protótipo: o relato fica apenas nesta demonstração e não é enviado a uma equipa."
+        : "Este protótipo não está ligado a uma central de atendimento.";
+      reportForm.hidden = !isReport;
+      if (isReport) document.getElementById("report-description").value = "";
+      dialog.showModal();
+    }
+    document.getElementById("sos-button").addEventListener("click", () => openDialog("help"));
+    document.getElementById("report-button").addEventListener("click", () => openDialog("report"));
+    document.getElementById("dialog-close").addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => {
+      if (event.target === dialog) dialog.close();
+    });
+    reportForm.addEventListener("submit", (event) => {
+      event.preventDefault();
+      dialog.close();
+      showToast("Relato registado apenas nesta demonstração; não foi enviado.");
+    });
+  </script>
+</body>
+</html>
