@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>Parada Inteligente — Erechim</title>
+    <!-- Google Fonts: Montserrat -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&display=swap" rel="stylesheet">
+    <!-- Leaflet CSS -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a href="#mapa-erechim" class="skip-link">Pular para o mapa</a>
+
+    <div class="container-principal">
+
+        <!-- CABEÇALHO -->
+        <header class="cabecalho">
+            <div class="identidade">
+                <div class="identidade-logo">PI</div>
+                <div class="identidade-texto">
+                    <h1>Protótipo de Tela Interativa Parada Inteligente</h1>
+                    <p>Projeto Integrador • Engenharia Elétrica • 4º Semestre</p>
+                </div>
+            </div>
+
+            <div class="informacoes-topo">
+                <div class="informacao-relogio">
+                    <span id="data-atual">Carregando...</span>
+                    <span id="hora-atual">00:00:00</span>
+                </div>
+
+                <div class="divisor-topo"></div>
+
+                <div class="informacao-clima">
+                    <div id="icone-clima">☀️</div>
+                    <div class="clima-conteudo">
+                        <span id="temperatura-atual">26°C</span>
+                        <div class="temperaturas-extremas">
+                            <span>Máx. 26°C</span>
+                            <span>Mín. 14°C</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- ÁREA DO MAPA E BOTÕES -->
+        <main class="conteudo-principal">
+
+            <div class="area-mapa">
+                <div id="mapa-erechim" aria-label="Mapa interativo de Erechim"></div>
+
+                <div class="controles-mapa">
+                    <button class="controle-mapa" id="btn-zoom-in" type="button" title="Aumentar Zoom" aria-label="Aumentar zoom do mapa">+</button>
+                    <button class="controle-mapa" id="btn-zoom-out" type="button" title="Diminuir Zoom" aria-label="Diminuir zoom do mapa">−</button>
+                </div>
+            </div>
+
+            <!-- BOTÕES LATERAIS ESQUERDOS -->
+            <aside class="botoes-laterais esquerda">
+                <button class="botao-lateral botao-ia" type="button" data-painel="assistente"
+                        aria-controls="painel-assistente" aria-expanded="false">Assistente IA</button>
+                <button class="botao-lateral" type="button" data-painel="chegadas"
+                        aria-controls="painel-chegadas" aria-expanded="false">Chegadas</button>
+                <button class="botao-lateral" type="button" data-painel="linhas"
+                        aria-controls="painel-linhas" aria-expanded="false">Linhas</button>
+                <button class="botao-lateral" type="button" data-painel="horarios"
+                        aria-controls="painel-horarios" aria-expanded="false">Horários</button>
+            </aside>
+
+            <!-- BOTÕES LATERAIS DIREITOS -->
+            <aside class="botoes-laterais direita">
+                <button class="botao-lateral" type="button" data-painel="planejador"
+                        aria-controls="painel-planejador" aria-expanded="false">Planejador</button>
+                <button class="botao-lateral" type="button" data-painel="acessibilidade"
+                        aria-controls="painel-acessibilidade" aria-expanded="false">Acessibilidade</button>
+                <button class="botao-lateral" type="button" data-painel="info"
+                        aria-controls="painel-info" aria-expanded="false">Info Parada</button>
+                <button class="botao-lateral botao-ajuda" type="button" data-painel="ajuda"
+                        aria-controls="painel-ajuda" aria-expanded="false">Ajuda / SOS</button>
+            </aside>
+
+            <!-- PAINEL: ASSISTENTE IA -->
+            <div class="painel-funcionalidade" id="painel-assistente" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-assistente" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-assistente">Assistente com IA</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel do assistente">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Assistente virtual</p>
+
+                    <div class="sugestoes-ia">
+                        <button class="botao botao-sugestao" type="button" data-sugestao="Qual o próximo ônibus?">Próximo ônibus</button>
+                        <button class="botao botao-sugestao" type="button" data-sugestao="Como chegar na URI?">Como chegar na URI</button>
+                    </div>
+
+                    <div class="chat-log" id="chat-log" role="log" aria-live="polite">
+                        <div class="chat-mensagem chat-ia">
+                            <span class="chat-autor">Assistente</span>
+                            <p>Modo demonstração ativado. Posso informar horários, linhas e a infraestrutura desta parada.</p>
+                        </div>
+                    </div>
+
+                    <div class="chat-form">
+                        <label class="sr-only" for="chat-input">Mensagem para o assistente</label>
+                        <input class="campo-texto" id="chat-input" type="text" placeholder="Pergunte algo..." autocomplete="off">
+                        <button class="botao" type="button" id="chat-enviar">Enviar</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PAINEL: CHEGADAS -->
+            <div class="painel-funcionalidade" id="painel-chegadas" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-chegadas" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-chegadas">Próximas Chegadas</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de chegadas">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Previsão em tempo real</p>
+
+                    <article class="cartao">
+                        <div class="cartao-topo">
+                            <span class="chip-linha chip-02">02</span>
+                            <div class="cartao-titulo">
+                                <strong>Atlântico Expresso</strong>
+                                <span class="cartao-subtitulo">Bairro Atlântico</span>
+                            </div>
+                            <span class="badge badge-transito">Em trânsito</span>
+                        </div>
+                        <div class="cartao-corpo">
+                            <span class="tempo-chegada">5 <small>min</small></span>
+                            <div class="barra-progresso"><span style="width: 68%;"></span></div>
+                        </div>
+                    </article>
+
+                    <article class="cartao">
+                        <div class="cartao-topo">
+                            <span class="chip-linha chip-01">01</span>
+                            <div class="cartao-titulo">
+                                <strong>Centro / Atlântico</strong>
+                                <span class="cartao-subtitulo">Praça da Bandeira</span>
+                            </div>
+                            <span class="badge badge-atrasado">Atrasado</span>
+                        </div>
+                        <div class="cartao-corpo">
+                            <span class="tempo-chegada">13 <small>min</small></span>
+                            <div class="barra-progresso"><span class="progresso-alerta" style="width: 34%;"></span></div>
+                        </div>
+                    </article>
+
+                    <article class="cartao">
+                        <div class="cartao-topo">
+                            <span class="chip-linha chip-02">02</span>
+                            <div class="cartao-titulo">
+                                <strong>Atlântico Expresso</strong>
+                                <span class="cartao-subtitulo">Bairro Atlântico</span>
+                            </div>
+                            <span class="badge badge-no-horario">No horário</span>
+                        </div>
+                        <div class="cartao-corpo">
+                            <span class="tempo-chegada">24 <small>min</small></span>
+                            <div class="barra-progresso"><span style="width: 12%;"></span></div>
+                        </div>
+                    </article>
+
+                    <p class="nota-rodape">Atualizado automaticamente a cada 30 segundos • Fonte: GPS dos veículos</p>
+                </div>
+            </div>
+
+            <!-- PAINEL: LINHAS -->
+            <div class="painel-funcionalidade" id="painel-linhas" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-linhas" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-linhas">Linhas e Itinerários</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de linhas">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <label class="campo-rotulo" for="busca-linha">Buscar linha</label>
+                    <input class="campo-texto" id="busca-linha" type="text" placeholder="Ex.: 01, Atlântico...">
+
+                    <p class="rotulo-secao">Linhas atendidas nesta parada</p>
+
+                    <article class="cartao">
+                        <div class="cartao-topo">
+                            <span class="chip-linha chip-01">01</span>
+                            <div class="cartao-titulo">
+                                <strong>Centro / Atlântico</strong>
+                                <span class="cartao-subtitulo">Praça da Bandeira ↔ Bairro Atlântico</span>
+                            </div>
+                            <span class="badge badge-no-horario">No horário</span>
+                        </div>
+                    </article>
+
+                    <article class="cartao">
+                        <div class="cartao-topo">
+                            <span class="chip-linha chip-02">02</span>
+                            <div class="cartao-titulo">
+                                <strong>Atlântico Expresso</strong>
+                                <span class="cartao-subtitulo">Terminal ↔ Bairro Atlântico</span>
+                            </div>
+                            <span class="badge badge-transito">Em trânsito</span>
+                        </div>
+                    </article>
+
+                    <p class="nota-rodape">Selecione uma linha para detalhes completos de itinerário e pontos de parada.</p>
+                </div>
+            </div>
+
+            <!-- PAINEL: HORÁRIOS -->
+            <div class="painel-funcionalidade" id="painel-horarios" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-horarios" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-horarios">Quadro de Horários</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de horários">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Horários de operação — Hoje</p>
+
+                    <table class="tabela-horarios">
+                        <thead>
+                            <tr>
+                                <th scope="col">Linha</th>
+                                <th scope="col">Saídas previstas</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td><span class="chip-linha chip-01 chip-mini">01</span></td>
+                                <td>06:30 · 07:15 · 08:00 · 09:30</td>
+                            </tr>
+                            <tr>
+                                <td><span class="chip-linha chip-02 chip-mini">02</span></td>
+                                <td>06:20 · 06:50 · 07:40 · 09:10</td>
+                            </tr>
+                        </tbody>
+                    </table>
+
+                    <button class="botao botao-bloco" type="button">🖨 Imprimir / Gerar PDF</button>
+                    <p class="nota-rodape">Horários sujeitos a alteração em feriados e pontos facultativos.</p>
+                </div>
+            </div>
+
+            <!-- PAINEL: PLANEJADOR -->
+            <div class="painel-funcionalidade" id="painel-planejador" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-planejador" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-planejador">Planejador de Viagens</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel do planejador">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Monte seu trajeto</p>
+
+                    <label class="campo-rotulo" for="plano-origem">Origem</label>
+                    <select class="campo-select" id="plano-origem">
+                        <option>Parada Inteligente (Praça da Bandeira)</option>
+                        <option>URI Erechim</option>
+                        <option>Terminal Urbano</option>
+                    </select>
+
+                    <label class="campo-rotulo" for="plano-destino">Destino</label>
+                    <select class="campo-select" id="plano-destino">
+                        <option>Bairro Atlântico</option>
+                        <option>URI Erechim</option>
+                        <option>Terminal Urbano</option>
+                    </select>
+
+                    <button class="botao botao-bloco botao-destaque" type="button" id="btn-calcular">Calcular trajeto</button>
+
+                    <div class="resultado-plano" id="resultado-plano" hidden></div>
+                </div>
+            </div>
+
+            <!-- PAINEL: ACESSIBILIDADE -->
+            <div class="painel-funcionalidade" id="painel-acessibilidade" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-acessibilidade" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-acessibilidade">Acessibilidade</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de acessibilidade">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Contraste da tela</p>
+
+                    <div class="grade-botoes">
+                        <button class="botao" type="button" id="btn-contraste-padrao" aria-pressed="false">Padrão</button>
+                        <button class="botao" type="button" id="btn-contraste-alto" aria-pressed="false">Alto contraste</button>
+                    </div>
+
+                    <p class="nota-rodape">O modo de alto contraste melhora a leitura em ambientes com muita luz — ideal para uso diurno no totem.</p>
+                </div>
+            </div>
+
+            <!-- PAINEL: INFO PARADA -->
+            <div class="painel-funcionalidade" id="painel-info" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-info" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-info">Infraestrutura da Parada</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de infraestrutura">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Telemetria do totem (ESP32)</p>
+
+                    <div class="alerta-demo">⚠ Modo demonstração — dados simulados (ESP32)</div>
+
+                    <div class="painel-telemetria" aria-label="Telemetria do totem">
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Bateria</span>
+                            <span class="telemetria-valor">98<small>%</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Tensão</span>
+                            <span class="telemetria-valor">12,4<small>V</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Wi-Fi</span>
+                            <span class="telemetria-valor">-58<small>dBm</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Temp. interna</span>
+                            <span class="telemetria-valor">42<small>°C</small></span>
+                            <span class="led-status led-alerta" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Sensores</span>
+                            <span class="telemetria-valor">4<small>/4 OK</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Uptime</span>
+                            <span class="telemetria-valor">12<small>d 04h</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Firmware</span>
+                            <span class="telemetria-valor">v1.4.2</span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                        <div class="telemetria-item">
+                            <span class="telemetria-rotulo">Última sync</span>
+                            <span class="telemetria-valor">2<small>s</small></span>
+                            <span class="led-status" aria-hidden="true"></span>
+                        </div>
+                    </div>
+
+                    <p class="nota-rodape">Módulo de comunicação: ESP32 • Protocolo MQTT • Atualização a cada 10 s.</p>
+                </div>
+            </div>
+
+            <!-- PAINEL: AJUDA / SOS -->
+            <div class="painel-funcionalidade" id="painel-ajuda" role="dialog"
+                 aria-modal="false" aria-labelledby="titulo-ajuda" aria-hidden="true">
+                <div class="painel-cabecalho">
+                    <h2 id="titulo-ajuda">Ajuda / SOS</h2>
+                    <button class="fechar-painel" type="button" aria-label="Fechar painel de ajuda">&times;</button>
+                </div>
+                <div class="painel-conteudo">
+                    <p class="rotulo-secao">Emergências</p>
+
+                    <button class="botao-sos" type="button">
+                        <span class="sos-numero">192</span>
+                        <span class="sos-texto">
+                            <strong>SAMU</strong>
+                            <small>Atendimento médico de urgência</small>
+                        </span>
+                    </button>
+
+                    <button class="botao-sos" type="button">
+                        <span class="sos-numero">190</span>
+                        <span class="sos-texto">
+                            <strong>Polícia Militar</strong>
+                            <small>Segurança e ocorrências</small>
+                        </span>
+                    </button>
+
+                    <button class="botao-sos" type="button">
+                        <span class="sos-numero">193</span>
+                        <span class="sos-texto">
+                            <strong>Bombeiros</strong>
+                            <small>Resgate e incêndios</small>
+                        </span>
+                    </button>
+
+                    <p class="nota-rodape">Em caso de emergência, informe o código da parada exibido no totem ao atendente.</p>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
