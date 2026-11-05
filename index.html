@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Painel da Parada Inteligente de Erechim.">
+    <meta name="theme-color" content="#ffffff">
+    <title>Parada Inteligente | Erechim</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <a href="#mapa-erechim" class="skip-link">Pular para o mapa</a>
+
+    <div class="container-principal">
+
+        <!-- BARRA SUPERIOR REFORMULADA -->
+        <header class="cabecalho">
+            <div class="identidade">
+                <div class="identidade-logo" aria-hidden="true">PI</div>
+                <div class="identidade-texto">
+                    <h1>Parada Inteligente <span>Erechim</span></h1>
+                    <p>Projeto Integrador • Engenharia Elétrica</p>
+                </div>
+            </div>
+
+            <div class="informacoes-topo">
+                <section class="informacao-relogio" aria-label="Data e horário local">
+                    <span id="data-atual">Carregando...</span>
+                    <strong id="hora-atual">--:--:--</strong>
+                </section>
+
+                <div class="divisor-topo" aria-hidden="true"></div>
+
+                <section class="informacao-clima" aria-label="Clima atual">
+                    <span id="icone-clima" aria-hidden="true">☁️</span>
+                    <div class="clima-conteudo">
+                        <strong id="temperatura-atual">--°C</strong>
+                        <div class="temperaturas-extremas">
+                            <span>Máx. <strong id="temperatura-maxima">--°C</strong></span>
+                            <span>Mín. <strong id="temperatura-minima">--°C</strong></span>
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </header>
+
+        <!-- ÁREA DO MAPA -->
+        <main class="conteudo-principal">
+            <div class="area-mapa" id="container-area-mapa">
+
+                <div id="mapa-erechim" aria-label="Mapa interativo de Erechim"></div>
+
+                <div class="mapa-carregando" id="mapa-carregando" role="status">
+                    <div class="spinner-mapa" aria-hidden="true"></div>
+                    <span>Carregando mapa…</span>
+                </div>
+
+                <!-- CONTROLES DO MAPA -->
+                <div class="controles-mapa" role="group" aria-label="Controles do mapa">
+                    <button class="controle-mapa" onclick="centralizarMapa()" title="Centralizar">⤢</button>
+                    <button class="controle-mapa" onclick="toggleFiltroLinhas()" title="Filtrar linhas" aria-expanded="false" id="btn-filtro-mapa">☰</button>
+                    <button class="controle-mapa" onclick="toggleLegenda()" title="Legenda" aria-expanded="true" id="btn-legenda-mapa">◐</button>
+                </div>
+
+                <div class="filtro-linhas-mapa" id="filtro-linhas" hidden role="group" aria-label="Filtro de linhas">
+                    <strong>Filtrar linhas</strong>
+                    <div id="lista-filtro-linhas"></div>
+                    <button class="btn-limpar-filtro" onclick="limparFiltroLinhas()">Mostrar todas</button>
+                </div>
+
+                <div class="legenda-mapa" id="legenda-mapa" aria-label="Legenda das linhas">
+                    <strong>Linhas</strong>
+                    <div id="legenda-linhas"></div>
+                </div>
+
+                <!-- BOTÕES LATERAIS (QUADRADOS) -->
+                <aside class="botoes-laterais esquerda" aria-label="Navegação principal">
+                    <button class="botao-lateral botao-principal" onclick="mostrarIA()">Assistente IA</button>
+                    <button class="botao-lateral" onclick="mostrarChegadas()">Chegadas</button>
+                    <button class="botao-lateral" onclick="mostrarRotas()">Linhas</button>
+                    <button class="botao-lateral" onclick="mostrarHorarios()">Horários</button>
+                </aside>
+
+                <aside class="botoes-laterais direita" aria-label="Navegação secundária">
+                    <button class="botao-lateral" onclick="mostrarPlanejador()">Planejador</button>
+                    <button class="botao-lateral" onclick="mostrarAcessibilidade()">Acessibilidade</button>
+                    <button class="botao-lateral" onclick="mostrarMonitoramento()">Info Parada</button>
+                    <button class="botao-lateral botao-ajuda" onclick="mostrarAjuda()">Ajuda / SOS</button>
+                </aside>
+
+                <!-- PAINEL DESDOBRÁVEL -->
+                <section id="painel-funcionalidade" class="painel-funcionalidade" aria-hidden="true" role="dialog" aria-labelledby="painel-titulo">
+                    <div class="painel-cabecalho">
+                        <div>
+                            <span class="painel-categoria" id="painel-categoria-sub">PARADA INTELIGENTE • ERECHIM</span>
+                            <h2 id="painel-titulo">Painel</h2>
+                        </div>
+                        <button class="fechar-painel" onclick="fecharPainel()" aria-label="Fechar painel">×</button>
+                    </div>
+                    <div id="painel-conteudo" class="painel-conteudo"></div>
+                </section>
+
+                <!-- TOAST -->
+                <div id="aviso-sistema" class="aviso-sistema" role="status" aria-live="polite"></div>
+            </div>
+        </main>
+    </div>
+
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
