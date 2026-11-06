@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Parada Inteligente — Erechim</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<a href="#map" class="skip-link">Pular para o mapa</a>
+
+<div class="container-principal">
+
+<header class="cabecalho">
+    <div class="identidade">
+        <div class="identidade-logo">PI</div>
+        <div class="identidade-texto">
+            <h1>Parada Inteligente — Erechim</h1>
+            <p>Terminal Urbano &amp; Mobilidade Integrada</p>
+        </div>
+    </div>
+
+    <div class="informacoes-topo">
+        <div class="informacao-relogio">
+            <span id="data-atual">Carregando...</span>
+            <span id="hora-atual">00:00:00</span>
+        </div>
+        <div class="divisor-topo"></div>
+        <div class="informacao-clima">
+            <span id="icone-clima">☀️</span>
+            <div class="clima-conteudo">
+                <b id="temperatura-atual">--°C</b>
+                <div class="temperaturas-extremas">
+                    <span id="temp-max">Máx: --°C</span>
+                    <span id="temp-min">Mín: --°C</span>
+                </div>
+                <span id="detalhe-clima" class="detalhe-clima-texto">Carregando clima...</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="conteudo-principal">
+
+    <div class="area-mapa">
+        <div id="map" aria-label="Mapa interativo de Erechim"></div>
+
+        <div class="topbar-mapa">
+            <div class="top-actions">
+                <button class="btn active" id="view2d">2D</button>
+                <button class="btn" id="view3d">3D</button>
+                <button class="btn primary" id="locate">Terminal Central</button>
+            </div>
+        </div>
+
+        <div class="controles-mapa-topo">
+            <button class="controle-mapa" id="btn-zoom-in">+</button>
+            <button class="controle-mapa" id="btn-zoom-out">−</button>
+        </div>
+
+        <div class="map-note">
+            © OpenStreetMap / OpenFreeMap · Pontos de bairro aproximados
+        </div>
+    </div>
+
+    <aside class="botoes-laterais esquerda">
+        <button class="botao-lateral botao-ia" data-painel="assistente">Assistente IA</button>
+        <button class="botao-lateral" data-painel="chegadas">Chegadas</button>
+        <button class="botao-lateral" data-painel="linhas">Linhas</button>
+        <button class="botao-lateral" data-painel="horarios">Horários</button>
+    </aside>
+
+    <aside class="botoes-laterais direita">
+        <button class="botao-lateral" data-painel="planejador">Planejador</button>
+        <button class="botao-lateral" data-painel="acessibilidade">Acessibilidade</button>
+        <button class="botao-lateral" data-painel="info">Info Totem</button>
+        <button class="botao-lateral botao-ajuda" data-painel="ajuda">Ajuda / SOS</button>
+    </aside>
+
+    <!-- ASSISTENTE -->
+    <section class="painel-funcionalidade" id="painel-assistente">
+        <div class="painel-cabecalho">
+            <h2>Assistente Virtual</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <p class="rotulo-secao">Pergunte por texto ou voz</p>
+
+            <div class="sugestoes-ia">
+                <button class="botao" data-sugestao="Qual linha vai para o Campus 1 da URI?">URI Campus 1</button>
+                <button class="botao" data-sugestao="Onde fica o Terminal Urbano?">Terminal</button>
+                <button class="botao" data-sugestao="Quais as linhas disponíveis?">Linhas</button>
+            </div>
+
+            <div class="chat-log" id="chat-log">
+                <div class="chat-mensagem mensagem-assistente">
+                    Olá! Posso ajudar com linhas, bairros e câmpus da URI.
+                </div>
+            </div>
+
+            <div class="chat-form">
+                <input class="campo-texto" id="chat-input" placeholder="Digite sua pergunta...">
+                <button class="botao" id="chat-mic">🎙️</button>
+                <button class="botao botao-destaque" id="chat-enviar">Enviar</button>
+            </div>
+
+            <div id="status-voz" hidden>Ouvindo...</div>
+        </div>
+    </section>
+
+    <!-- CHEGADAS -->
+    <section class="painel-funcionalidade" id="painel-chegadas">
+        <div class="painel-cabecalho">
+            <h2>Próximas Chegadas</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <p class="rotulo-secao">Estimativas demonstrativas</p>
+            <div id="chegadas-simuladas"></div>
+            <p class="aviso-demo">
+                Previsões simuladas; não representam rastreamento de ônibus reais.
+            </p>
+        </div>
+    </section>
+
+    <!-- LINHAS -->
+    <section class="painel-funcionalidade" id="painel-linhas">
+        <div class="painel-cabecalho">
+            <h2>Linhas e Itinerários</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <label for="busca-linha">Buscar linha ou bairro</label>
+            <input class="campo-texto" id="busca-linha"
+                   placeholder="Ex.: URI, Três Vendas, Atlântico...">
+
+            <div id="rotas-lista"></div>
+
+            <div class="controles-onibus">
+                <button class="botao botao-destaque" id="btn-iniciar-onibus">▶ Iniciar</button>
+                <button class="botao" id="btn-pausar-onibus">Ⅱ Pausar</button>
+                <button class="botao" id="btn-reiniciar-onibus">↻ Reiniciar</button>
+            </div>
+
+            <p id="status-rota" class="rota-status">Selecione uma linha.</p>
+
+            <p class="aviso-demo">
+                Itinerários e pontos aproximados para demonstração.
+                Não são paradas oficiais.
+            </p>
+        </div>
+    </section>
+
+    <!-- HORÁRIOS -->
+    <section class="painel-funcionalidade" id="painel-horarios">
+        <div class="painel-cabecalho">
+            <h2>Quadro de Horários</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <p class="aviso-demo">
+                Os horários oficiais ainda não foram cadastrados neste protótipo.
+                Consulte o operador do transporte.
+            </p>
+        </div>
+    </section>
+
+    <!-- PLANEJADOR -->
+    <section class="painel-funcionalidade" id="painel-planejador">
+        <div class="painel-cabecalho">
+            <h2>Planejador de Viagens</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <label for="origin">PONTO DE PARTIDA</label>
+            <select id="origin" class="campo-select"></select>
+
+            <label for="destination">DESTINO</label>
+            <select id="destination" class="campo-select"></select>
+
+            <button class="botao botao-bloco botao-destaque" id="drawRoute">
+                Traçar rota
+            </button>
+
+            <button class="botao botao-bloco" id="clearRoute">
+                Limpar trajeto
+            </button>
+
+            <div id="routeInfo" hidden>
+                <strong id="routeDistance"></strong>
+                <p id="routeDuration"></p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ACESSIBILIDADE -->
+    <section class="painel-funcionalidade" id="painel-acessibilidade">
+        <div class="painel-cabecalho">
+            <h2>Acessibilidade</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="grade-botoes-acessibilidade">
+                <button class="btn-toggle-acessivel active" id="btn-contraste-padrao">
+                    Modo Padrão
+                </button>
+                <button class="btn-toggle-acessivel" id="btn-contraste-alto">
+                    Alto Contraste
+                </button>
+            </div>
+
+            <div class="grade-botoes-acessibilidade">
+                <button class="btn-toggle-acessivel active" id="btn-fonte-normal">
+                    Texto Normal
+                </button>
+                <button class="btn-toggle-acessivel" id="btn-fonte-maior">
+                    Texto Ampliado
+                </button>
+            </div>
+
+            <button class="btn-acao-acessivel" id="btn-leitura-voz">
+                🔊 Ler resumo da parada
+            </button>
+
+            <button class="btn-acao-acessivel perigo" id="btn-parar-voz">
+                🔇 Parar áudio
+            </button>
+        </div>
+    </section>
+
+    <!-- INFORMAÇÕES -->
+    <section class="painel-funcionalidade" id="painel-info">
+        <div class="painel-cabecalho">
+            <h2>Status do Totem</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="telemetria-item">
+                <b>INTERFACE ONLINE</b>
+                <span class="led-status"></span>
+            </div>
+
+            <p class="aviso-demo">
+                Não há conexão MQTT/ESP32 configurada nesta versão.
+            </p>
+        </div>
+    </section>
+
+    <!-- AJUDA -->
+    <section class="painel-funcionalidade" id="painel-ajuda">
+        <div class="painel-cabecalho">
+            <h2>Ajuda / SOS</h2>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <button class="botao-sos" data-numero="192">
+                <b class="sos-numero">192</b> SAMU
+            </button>
+
+            <button class="botao-sos" data-numero="190">
+                <b class="sos-numero">190</b> Polícia Militar
+            </button>
+
+            <label for="comentario-usuario">Sugestão / Relato</label>
+            <textarea class="campo-texto" id="comentario-usuario" rows="3"></textarea>
+
+            <button class="botao botao-bloco botao-destaque" id="btn-enviar-comentario">
+                Enviar relato
+            </button>
+        </div>
+    </section>
+
+</main>
+</div>
+
+<div class="toast" id="toast" role="status"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="script.js"></script>
+
+</body>
+</html>
