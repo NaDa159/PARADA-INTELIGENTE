@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="theme-color" content="#0f172a">
+<title>Parada Inteligente — Erechim</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.css" rel="stylesheet">
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+<a href="#map" class="skip-link">Pular para o mapa</a>
+
+<div class="container-principal">
+
+<header class="cabecalho">
+    <div class="identidade">
+        <div class="identidade-logo">PI</div>
+        <div class="identidade-texto">
+            <h1>Parada Inteligente — Erechim</h1>
+            <p>Terminal Urbano &amp; Mobilidade Integrada</p>
+        </div>
+    </div>
+
+    <div class="informacoes-topo">
+        <div class="informacao-relogio">
+            <span id="data-atual">Carregando...</span>
+            <span id="hora-atual">00:00:00</span>
+        </div>
+
+        <div class="divisor-topo"></div>
+
+        <div class="informacao-clima">
+            <span id="icone-clima">⛅</span>
+            <div class="clima-conteudo">
+                <b id="temperatura-atual">--°C</b>
+                <div class="temperaturas-extremas">
+                    <span id="temp-max">Máx: --°C</span>
+                    <span id="temp-min">Mín: --°C</span>
+                </div>
+                <span id="detalhe-clima" class="detalhe-clima-texto">Carregando clima...</span>
+            </div>
+        </div>
+    </div>
+</header>
+
+<main class="conteudo-principal">
+
+    <div class="area-mapa">
+        <div id="map" aria-label="Mapa interativo de Erechim"></div>
+
+        <div class="topbar-mapa">
+            <div class="top-actions">
+                <button class="btn active" id="view2d">2D</button>
+                <button class="btn" id="view3d">3D</button>
+                <button class="btn primary" id="locate">Terminal Central</button>
+            </div>
+        </div>
+
+        <div class="controles-mapa-topo">
+            <button class="controle-mapa" id="btn-zoom-in" aria-label="Aumentar zoom">+</button>
+            <button class="controle-mapa" id="btn-zoom-out" aria-label="Diminuir zoom">−</button>
+        </div>
+
+        <div class="map-note">
+            © OpenStreetMap / OpenFreeMap · Referências de bairros aproximadas
+        </div>
+    </div>
+
+    <aside class="botoes-laterais esquerda">
+        <button class="botao-lateral botao-ia" data-painel="assistente">Assistente IA</button>
+        <button class="botao-lateral" data-painel="chegadas">Chegadas</button>
+        <button class="botao-lateral" data-painel="linhas">Linhas</button>
+        <button class="botao-lateral" data-painel="horarios">Horários</button>
+    </aside>
+
+    <aside class="botoes-laterais direita">
+        <button class="botao-lateral" data-painel="planejador">Planejador</button>
+        <button class="botao-lateral" data-painel="acessibilidade">Acessibilidade</button>
+        <button class="botao-lateral" data-painel="info">Info Totem</button>
+        <button class="botao-lateral botao-ajuda" data-painel="ajuda">Ajuda / SOS</button>
+    </aside>
+
+    <!-- ASSISTENTE -->
+    <section class="painel-funcionalidade" id="painel-assistente">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Assistente Virtual</h2>
+                <small>Informações sobre mobilidade urbana</small>
+            </div>
+            <button class="fechar-painel" aria-label="Fechar">×</button>
+        </div>
+
+        <div class="painel-conteudo assistente-conteudo">
+            <div class="assistente-status">
+                <span class="status-ponto"></span>
+                Assistente demonstrativo disponível
+            </div>
+
+            <p class="rotulo-secao">Como posso ajudar?</p>
+
+            <div class="sugestoes-ia">
+                <button class="botao" data-sugestao="Quais linhas estão disponíveis?">🚌 Linhas</button>
+                <button class="botao" data-sugestao="Como chegar à URI Câmpus I?">🎓 URI Câmpus I</button>
+                <button class="botao" data-sugestao="Como chegar à URI Câmpus II?">🎓 URI Câmpus II</button>
+                <button class="botao" data-sugestao="Onde fica o terminal?">📍 Terminal</button>
+                <button class="botao" data-sugestao="Como consultar os horários?">🕒 Horários</button>
+                <button class="botao" data-sugestao="Quais recursos de acessibilidade existem?">♿ Acessibilidade</button>
+                <button class="botao" data-sugestao="Como está o clima agora?">🌦️ Clima</button>
+                <button class="botao" data-sugestao="Quais são os contatos de ajuda?">☎️ Contatos</button>
+            </div>
+
+            <div class="chat-log" id="chat-log" aria-live="polite">
+                <div class="chat-mensagem mensagem-assistente">
+                    Olá! Sou o assistente da Parada Inteligente. Posso ajudar com linhas, horários, bairros, URI, terminal e informações do totem.
+                </div>
+            </div>
+
+            <div class="chat-opcoes">
+                <button class="botao" id="chat-limpar">Limpar conversa</button>
+                <button class="botao" id="chat-voz-resposta" aria-pressed="true">🔊 Voz ativada</button>
+            </div>
+
+            <div class="chat-form">
+                <input class="campo-texto" id="chat-input" placeholder="Digite sua pergunta..." autocomplete="off">
+                <button class="botao" id="chat-mic" aria-label="Falar pergunta">🎙️</button>
+                <button class="botao botao-destaque" id="chat-enviar">Enviar</button>
+            </div>
+
+            <p id="status-voz" class="status-voz" hidden>🎙️ Ouvindo... fale agora.</p>
+            <p class="aviso-demo">As respostas são geradas localmente. Não há conexão com um serviço externo de inteligência artificial.</p>
+        </div>
+    </section>
+
+    <!-- CHEGADAS -->
+    <section class="painel-funcionalidade" id="painel-chegadas">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Próximas Chegadas</h2>
+                <small>Estimativas de demonstração</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="cartao-informativo">
+                <strong>Terminal Urbano Central</strong>
+                <span>Estimativas ilustrativas de chegada</span>
+            </div>
+            <div id="chegadas-simuladas"></div>
+            <p class="aviso-demo">Os tempos são simulados e não representam a localização ou chegada de ônibus reais.</p>
+        </div>
+    </section>
+
+    <!-- LINHAS -->
+    <section class="painel-funcionalidade" id="painel-linhas">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Linhas e Itinerários</h2>
+                <small>Rotas demonstrativas no mapa</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <label for="busca-linha">Buscar linha ou bairro</label>
+            <input class="campo-texto" id="busca-linha" placeholder="Ex.: URI, Três Vendas, Atlântico...">
+
+            <div id="rotas-lista"></div>
+
+            <div class="controles-onibus">
+                <button class="botao botao-destaque" id="btn-iniciar-onibus">▶ Iniciar</button>
+                <button class="botao" id="btn-pausar-onibus">Ⅱ Pausar</button>
+                <button class="botao" id="btn-reiniciar-onibus">↻ Reiniciar</button>
+            </div>
+
+            <p id="status-rota" class="rota-status">Selecione uma linha.</p>
+
+            <p class="aviso-demo">Os itinerários 01 a 07 são exemplos visuais do projeto. Não representam a numeração ou os percursos oficiais da Gaurama.</p>
+        </div>
+    </section>
+
+    <!-- HORÁRIOS -->
+    <section class="painel-funcionalidade" id="painel-horarios">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Quadro de Horários</h2>
+                <small>Transporte coletivo em Erechim</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="cartao-informativo">
+                <strong>Transporte para a UFFS — Campus Erechim</strong>
+                <span>Quadro divulgado pela UFFS, válido a partir de 02/03/2026.</span>
+            </div>
+
+            <h3 class="subtitulo-painel">Segunda a sexta-feira</h3>
+
+            <div class="tabela-responsiva">
+                <table class="tabela-horarios">
+                    <thead>
+                        <tr>
+                            <th>Saída do Terminal</th>
+                            <th>Retorno</th>
+                            <th>Trajeto</th>
+                        </tr>
+                    </thead>
+                    <tbody id="horarios-uffs"></tbody>
+                </table>
+            </div>
+
+            <h3 class="subtitulo-painel">Sábado — Van da UFFS</h3>
+
+            <div class="cartao-horario">
+                <div><b>07:30</b><span>Saída da Prefeitura → UFFS</span></div>
+                <div><b>11:30</b><span>Saída do Campus → Prefeitura</span></div>
+            </div>
+
+            <div class="aviso-demo">
+                Este quadro é específico do atendimento à UFFS. Os horários podem sofrer alterações em férias, recessos e períodos de matrícula. Confirme sempre a programação atualizada.
+            </div>
+
+            <h3 class="subtitulo-painel">Consulta das demais linhas urbanas</h3>
+
+            <div class="cartao-informativo">
+                <strong>Empresa de Transportes Gaurama</strong>
+                <span>Consulte a busca oficial por linha, bairro e horário.</span>
+                <a href="https://urbanoerechim.com.br/" target="_blank" rel="noopener">Abrir consulta oficial ↗</a>
+            </div>
+
+            <div class="cartao-informativo">
+                <strong>Contato da empresa</strong>
+                <span>(54) 3321-3637 · (54) 3522-6106</span>
+                <span>WhatsApp: (54) 99144-7046</span>
+            </div>
+
+            <p class="aviso-demo">As sete linhas coloridas do mapa são simulações independentes deste quadro oficial.</p>
+        </div>
+    </section>
+
+    <!-- PLANEJADOR -->
+    <section class="painel-funcionalidade" id="painel-planejador">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Planejador de Viagens</h2>
+                <small>Encontre um trajeto entre dois pontos</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="bloco-explicativo">
+                <strong>Planeje seu deslocamento</strong>
+                <p>Escolha a origem e o destino para visualizar um trajeto no mapa.</p>
+            </div>
+
+            <label for="origin">PONTO DE PARTIDA</label>
+            <select id="origin" class="campo-select"></select>
+
+            <button class="botao botao-bloco" id="swapRoute">⇅ Inverter origem e destino</button>
+
+            <label for="destination">DESTINO</label>
+            <select id="destination" class="campo-select"></select>
+
+            <button class="botao botao-bloco botao-destaque" id="drawRoute">Traçar rota</button>
+            <button class="botao botao-bloco" id="clearRoute">Limpar trajeto</button>
+
+            <div id="routeInfo" class="resultado-rota" hidden>
+                <span class="resultado-titulo">Resultado do trajeto</span>
+                <strong id="routeDistance"></strong>
+                <p id="routeDuration"></p>
+                <small>Estimativa para deslocamento de carro, não para ônibus.</small>
+            </div>
+
+            <div class="aviso-demo">
+                O planejador usa o serviço público OSRM. A rota pode ficar indisponível se o serviço estiver fora do ar.
+            </div>
+        </div>
+    </section>
+
+    <!-- ACESSIBILIDADE -->
+    <section class="painel-funcionalidade" id="painel-acessibilidade">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Acessibilidade</h2>
+                <small>Personalize a visualização</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="bloco-explicativo">
+                <strong>Visualização</strong>
+                <p>Altere o contraste e o tamanho dos textos para facilitar a leitura.</p>
+            </div>
+
+            <h3 class="subtitulo-painel">Contraste</h3>
+            <div class="grade-botoes-acessibilidade">
+                <button class="btn-toggle-acessivel active" id="btn-contraste-padrao">Modo padrão</button>
+                <button class="btn-toggle-acessivel" id="btn-contraste-alto">Alto contraste</button>
+            </div>
+
+            <h3 class="subtitulo-painel">Tamanho do texto</h3>
+            <div class="grade-botoes-acessibilidade">
+                <button class="btn-toggle-acessivel active" id="btn-fonte-normal">Texto normal</button>
+                <button class="btn-toggle-acessivel" id="btn-fonte-maior">Texto ampliado</button>
+            </div>
+
+            <h3 class="subtitulo-painel">Leitura por voz</h3>
+            <button class="btn-acao-acessivel" id="btn-leitura-voz">🔊 Ler resumo da parada</button>
+            <button class="btn-acao-acessivel perigo" id="btn-parar-voz">🔇 Parar áudio</button>
+
+            <p class="aviso-demo">Os recursos de voz dependem do suporte do navegador e das permissões de áudio do dispositivo.</p>
+        </div>
+    </section>
+
+    <!-- INFO TOTEM -->
+    <section class="painel-funcionalidade" id="painel-info">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Status do Totem</h2>
+                <small>Informações da interface</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="status-principal">
+                <div>
+                    <span class="status-ponto"></span>
+                    <strong>INTERFACE DISPONÍVEL</strong>
+                </div>
+                <small>Estado visual desta demonstração</small>
+            </div>
+
+            <h3 class="subtitulo-painel">Componentes da aplicação</h3>
+
+            <div class="telemetria-item">
+                <div><b>Interface web</b><small>Aplicação carregada</small></div>
+                <span class="status-tag status-ok">Ativa</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Mapa interativo</b><small>MapLibre GL</small></div>
+                <span class="status-tag" id="status-mapa">Carregando</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Serviço de rotas</b><small>OSRM público</small></div>
+                <span class="status-tag status-info">Sob demanda</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Previsão do tempo</b><small>Open-Meteo</small></div>
+                <span class="status-tag" id="status-clima">Aguardando</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Assistente por voz</b><small>Recursos do navegador</small></div>
+                <span class="status-tag" id="status-voz-totem">Verificando</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Dados de ônibus</b><small>Sem rastreamento GPS</small></div>
+                <span class="status-tag status-alerta">Demonstrativo</span>
+            </div>
+
+            <div class="telemetria-item">
+                <div><b>Conexão MQTT / ESP32</b><small>Integração não configurada</small></div>
+                <span class="status-tag status-alerta">Desconectada</span>
+            </div>
+
+            <h3 class="subtitulo-painel">Informações do sistema</h3>
+
+            <div class="cartao-informativo">
+                <span>Última atualização da interface</span>
+                <strong id="ultima-atualizacao">--</strong>
+            </div>
+
+            <div class="cartao-informativo">
+                <span>Condição da conexão com a internet</span>
+                <strong id="status-internet">Verificando...</strong>
+            </div>
+
+            <div class="aviso-demo">
+                Os indicadores acima informam o estado da interface e dos serviços consultados. Não são leituras de sensores físicos. Não existe comunicação real com hardware nesta versão.
+            </div>
+        </div>
+    </section>
+
+    <!-- AJUDA / SOS -->
+    <section class="painel-funcionalidade" id="painel-ajuda">
+        <div class="painel-cabecalho">
+            <div>
+                <h2>Ajuda / SOS</h2>
+                <small>Contatos úteis e orientação</small>
+            </div>
+            <button class="fechar-painel">×</button>
+        </div>
+
+        <div class="painel-conteudo">
+            <div class="aviso-emergencia">
+                <strong>Em caso de emergência</strong>
+                <span>Procure ajuda imediatamente pelos canais oficiais.</span>
+            </div>
+
+            <h3 class="subtitulo-painel">Emergências</h3>
+
+            <div class="contato-card contato-emergencia">
+                <span class="contato-numero">192</span>
+                <div><strong>SAMU</strong><small>Atendimento médico de urgência</small></div>
+            </div>
+
+            <div class="contato-card contato-emergencia">
+                <span class="contato-numero">190</span>
+                <div><strong>Polícia Militar</strong><small>Emergências e segurança pública</small></div>
+            </div>
+
+            <div class="contato-card contato-emergencia">
+                <span class="contato-numero">193</span>
+                <div><strong>Corpo de Bombeiros</strong><small>Incêndios, resgates e salvamentos</small></div>
+            </div>
+
+            <div class="contato-card contato-emergencia">
+                <span class="contato-numero">199</span>
+                <div><strong>Defesa Civil</strong><small>Ocorrências e situações de risco</small></div>
+            </div>
+
+            <h3 class="subtitulo-painel">Transporte coletivo</h3>
+
+            <div class="contato-card">
+                <span class="contato-icone">🚌</span>
+                <div>
+                    <strong>Empresa Gaurama</strong>
+                    <small>(54) 3321-3637 · (54) 3522-6106</small>
+                    <small>WhatsApp: (54) 99144-7046</small>
+                    <small>urbano@urbanoerechim.com.br</small>
+                </div>
+            </div>
+
+            <div class="contato-card">
+                <span class="contato-icone">ℹ️</span>
+                <div>
+                    <strong>AGER — Erechim</strong>
+                    <small>(54) 3321-6501 · (54) 3321-6491</small>
+                    <small>WhatsApp: (54) 99149-3554</small>
+                    <small>ager@erechim.rs.gov.br</small>
+                </div>
+            </div>
+
+            <div class="contato-card">
+                <span class="contato-icone">📍</span>
+                <div>
+                    <strong>Endereço da Gaurama</strong>
+                    <small>Rua Jerônimo Teixeira, 348 — Centro</small>
+                    <small>Erechim — RS</small>
+                </div>
+            </div>
+
+            <h3 class="subtitulo-painel">Sugestão / Relato</h3>
+
+            <label for="comentario-usuario">Descreva sua sugestão ou observação</label>
+            <textarea class="campo-texto" id="comentario-usuario" rows="4" placeholder="Digite aqui..."></textarea>
+
+            <button class="botao botao-bloco botao-destaque" id="btn-enviar-comentario">Registrar demonstração</button>
+
+            <p class="aviso-demo">Esta área é apenas visual e demonstrativa. Os contatos não são acionados por este painel e os relatos não são enviados a um servidor.</p>
+        </div>
+    </section>
+
+</main>
+</div>
+
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script src="https://unpkg.com/maplibre-gl@4.7.1/dist/maplibre-gl.js"></script>
+<script src="script.js"></script>
+</body>
+</html>

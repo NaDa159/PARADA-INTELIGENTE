@@ -1,0 +1,1209 @@
+:root {
+    --bg: #ffffff;
+    --bg2: #f1f5f9;
+    --txt: #0f172a;
+    --muted: #64748b;
+    --border: #cbd5e1;
+    --strong: #0f172a;
+    --blue: #2563eb;
+    --green: #059669;
+    --red: #dc2626;
+    --orange: #f59e0b;
+    --shadow: 4px 4px 0 #0f172a;
+    --font: 'Montserrat', sans-serif;
+}
+
+body.alto-contraste {
+    --bg: #000000;
+    --bg2: #151515;
+    --txt: #ffffff;
+    --muted: #e2e8f0;
+    --border: #ffffff;
+    --strong: #ffffff;
+    --blue: #2563eb;
+    --green: #10b981;
+    --red: #ef4444;
+    --shadow: 4px 4px 0 #ffffff;
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: var(--font);
+    border-radius: 0 !important;
+}
+
+html, body {
+    width: 100%;
+    height: 100%;
+    background: var(--bg);
+    color: var(--txt);
+    overflow: hidden;
+}
+
+body {
+    font-size: 14px;
+}
+
+body.fonte-grande {
+    font-size: 17px;
+}
+
+button, input, select, textarea {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+a:focus-visible {
+    outline: 3px solid var(--orange);
+    outline-offset: 3px;
+}
+
+a {
+    color: var(--blue);
+    font-weight: 800;
+}
+
+.skip-link {
+    position: absolute;
+    left: -9999px;
+}
+
+.skip-link:focus {
+    position: fixed;
+    left: 10px;
+    top: 10px;
+    z-index: 9999;
+    background: #000;
+    color: #fff;
+    padding: 12px;
+}
+
+.container-principal {
+    height: 100dvh;
+    padding: 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.cabecalho {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 18px;
+    border: 3px solid var(--strong);
+    box-shadow: var(--shadow);
+    background: var(--bg);
+    position: relative;
+    z-index: 10;
+}
+
+.identidade,
+.informacoes-topo,
+.informacao-clima {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.identidade-logo {
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    background: var(--blue);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-weight: 900;
+    border: 2px solid var(--strong);
+    font-size: 17px;
+}
+
+.identidade-texto h1 {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.identidade-texto p {
+    font-size: 10px;
+    color: var(--muted);
+    font-weight: 700;
+    margin-top: 3px;
+}
+
+.informacao-relogio {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+#data-atual {
+    font-size: 10px;
+    color: var(--muted);
+}
+
+#hora-atual {
+    font-size: 19px;
+    font-weight: 900;
+    color: var(--green);
+}
+
+.divisor-topo {
+    height: 38px;
+    width: 3px;
+    background: var(--border);
+}
+
+#icone-clima {
+    font-size: 25px;
+}
+
+#temperatura-atual {
+    font-weight: 900;
+    font-size: 17px;
+}
+
+.temperaturas-extremas {
+    font-size: 9px;
+    color: var(--muted);
+    display: flex;
+    gap: 7px;
+    margin-top: 2px;
+}
+
+.detalhe-clima-texto {
+    font-size: 9px;
+    color: var(--blue);
+    font-weight: 800;
+    display: block;
+    margin-top: 3px;
+}
+
+.conteudo-principal {
+    flex: 1;
+    min-height: 0;
+    position: relative;
+    border: 3px solid var(--strong);
+    background: var(--bg2);
+}
+
+.area-mapa,
+#map {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+}
+
+.topbar-mapa,
+.controles-mapa-topo {
+    position: absolute;
+    z-index: 5;
+    top: 14px;
+}
+
+.topbar-mapa {
+    left: 14px;
+}
+
+.top-actions {
+    display: flex;
+    gap: 6px;
+    padding: 6px;
+    background: var(--bg);
+    border: 3px solid var(--strong);
+    box-shadow: var(--shadow);
+}
+
+.btn,
+.controle-mapa {
+    background: var(--bg2);
+    color: var(--txt);
+    border: 2px solid var(--strong);
+    padding: 8px 12px;
+    font-weight: 800;
+}
+
+.btn.active,
+.btn.primary,
+.botao-destaque {
+    background: var(--blue);
+    color: #fff;
+}
+
+.controles-mapa-topo {
+    right: 14px;
+    display: flex;
+    gap: 6px;
+}
+
+.controle-mapa {
+    width: 40px;
+    height: 40px;
+    font-size: 18px;
+    box-shadow: var(--shadow);
+}
+
+.map-note {
+    position: absolute;
+    z-index: 3;
+    bottom: 10px;
+    left: 12px;
+    background: #fffffff0;
+    color: #334155;
+    padding: 6px 8px;
+    font-size: 9px;
+    font-weight: 600;
+}
+
+.map-pin {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #fff;
+    outline: 1px solid #1e293b;
+    background: var(--blue);
+    color: #fff;
+    display: grid;
+    place-items: center;
+    font-size: 10px;
+    font-weight: 900;
+    border-radius: 50% !important;
+}
+
+.map-pin.terminal {
+    background: #ea580c;
+    width: 30px;
+    height: 30px;
+    font-size: 14px;
+}
+
+.map-pin.universidade {
+    background: #7c3aed;
+    width: 26px;
+    height: 26px;
+}
+
+.map-pin.referencia {
+    background: #475569;
+}
+
+.map-pin.parada-bairro {
+    width: 13px;
+    height: 13px;
+    background: #fff;
+    border: 3px solid #2563eb;
+}
+
+.bus-animated-marker {
+    width: 30px;
+    height: 30px;
+    display: grid;
+    place-items: center;
+    background: #111827;
+    color: #fff;
+    border: 2px solid #fff;
+    outline: 2px solid #2563eb;
+    border-radius: 50% !important;
+    font-size: 15px;
+    cursor: pointer;
+}
+
+.bus-selecionado {
+    outline: 3px solid #facc15 !important;
+    transform: scale(1.2);
+}
+
+.maplibregl-popup-content {
+    border: 2px solid #0f172a;
+    padding: 10px;
+    color: #111;
+    font-family: var(--font);
+    box-shadow: 3px 3px #0f172a33;
+}
+
+.botoes-laterais {
+    position: absolute;
+    z-index: 600;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.botoes-laterais.esquerda {
+    left: 14px;
+}
+
+.botoes-laterais.direita {
+    right: 14px;
+}
+
+.botao-lateral {
+    width: 104px;
+    min-height: 66px;
+    padding: 8px;
+    background: var(--bg);
+    color: var(--txt);
+    border: 3px solid var(--strong);
+    box-shadow: var(--shadow);
+    font-size: 10px;
+    font-weight: 900;
+    text-transform: uppercase;
+    line-height: 1.35;
+    transition: transform .15s, background .15s;
+}
+
+.botao-lateral:hover {
+    transform: translate(-2px, -2px);
+}
+
+.botao-lateral.selecionado {
+    border-color: var(--orange);
+    background: var(--bg2);
+}
+
+.botao-ia {
+    background: #0284c7;
+    color: #fff;
+}
+
+.botao-ajuda {
+    background: var(--red);
+    color: #fff;
+}
+
+.painel-funcionalidade {
+    position: absolute;
+    z-index: 800;
+    top: 14px;
+    bottom: 14px;
+    left: 132px;
+    width: clamp(340px, 34vw, 490px);
+    display: flex;
+    flex-direction: column;
+    background: var(--bg);
+    color: var(--txt);
+    border: 3px solid var(--strong);
+    box-shadow: 8px 8px #0f172a33;
+    opacity: 0;
+    visibility: hidden;
+    pointer-events: none;
+    transform: translateX(-12px);
+    transition: opacity .2s, transform .2s, visibility .2s;
+}
+
+.painel-funcionalidade.aberto {
+    opacity: 1;
+    visibility: visible;
+    pointer-events: auto;
+    transform: none;
+}
+
+.painel-cabecalho {
+    min-height: 58px;
+    padding: 10px 12px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 10px;
+    background: var(--bg2);
+    border-bottom: 3px solid var(--strong);
+}
+
+.painel-cabecalho h2 {
+    font-size: 16px;
+    font-weight: 900;
+}
+
+.painel-cabecalho small {
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+    margin-top: 3px;
+    font-weight: 600;
+}
+
+.fechar-painel {
+    width: 36px;
+    height: 36px;
+    flex-shrink: 0;
+    background: var(--bg);
+    color: var(--txt);
+    border: 2px solid var(--strong);
+    font-size: 21px;
+    font-weight: 700;
+}
+
+.painel-conteudo {
+    padding: 15px;
+    overflow: auto;
+    flex: 1;
+    min-height: 0;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+}
+
+.painel-conteudo label {
+    display: block;
+    font-size: 11px;
+    font-weight: 800;
+    margin-top: 10px;
+}
+
+.rotulo-secao {
+    font-size: 11px;
+    font-weight: 900;
+    margin: 12px 0 9px;
+    border-bottom: 2px solid var(--strong);
+    padding-bottom: 7px;
+}
+
+.subtitulo-painel {
+    font-size: 12px;
+    font-weight: 900;
+    margin: 18px 0 9px;
+    padding-bottom: 7px;
+    border-bottom: 2px solid var(--strong);
+    text-transform: uppercase;
+}
+
+.campo-texto,
+.campo-select {
+    width: 100%;
+    min-height: 42px;
+    padding: 10px;
+    margin: 7px 0 10px;
+    border: 2px solid var(--strong);
+    background: var(--bg);
+    color: var(--txt);
+    font-size: 12px;
+}
+
+textarea.campo-texto {
+    resize: vertical;
+    min-height: 85px;
+}
+
+.botao {
+    padding: 9px 11px;
+    border: 2px solid var(--strong);
+    background: var(--bg);
+    color: var(--txt);
+    font-size: 11px;
+    font-weight: 800;
+    box-shadow: 2px 2px var(--strong);
+    margin: 2px;
+    transition: transform .15s;
+}
+
+.botao:hover {
+    transform: translate(-1px, -1px);
+}
+
+.botao-bloco {
+    display: block;
+    width: 100%;
+    margin: 7px 0;
+}
+
+.botao:disabled {
+    opacity: .55;
+    cursor: not-allowed;
+}
+
+.cartao-informativo,
+.bloco-explicativo {
+    padding: 12px;
+    border: 2px solid var(--strong);
+    box-shadow: 2px 2px var(--strong);
+    margin: 8px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.cartao-informativo strong,
+.bloco-explicativo strong {
+    font-size: 12px;
+}
+
+.cartao-informativo span,
+.bloco-explicativo p {
+    font-size: 10px;
+    color: var(--muted);
+    line-height: 1.5;
+}
+
+.cartao-informativo a {
+    font-size: 11px;
+    margin-top: 4px;
+}
+
+/* ASSISTENTE */
+
+.assistente-status {
+    padding: 9px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    font-size: 10px;
+    font-weight: 800;
+    margin-bottom: 12px;
+}
+
+.status-ponto {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    border-radius: 50% !important;
+    background: #22c55e;
+    margin-right: 6px;
+}
+
+.sugestoes-ia {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-bottom: 12px;
+}
+
+.sugestoes-ia .botao {
+    font-size: 10px;
+    margin: 0;
+    box-shadow: none;
+    border-color: var(--border);
+}
+
+.chat-log {
+    min-height: 180px;
+    max-height: 300px;
+    overflow: auto;
+    background: var(--bg2);
+    border: 2px solid var(--strong);
+    padding: 10px;
+    margin-bottom: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 9px;
+}
+
+.chat-mensagem {
+    max-width: 92%;
+    padding: 10px;
+    background: var(--bg);
+    color: var(--txt);
+    border: 1px solid var(--strong);
+    font-size: 11px;
+    line-height: 1.55;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+}
+
+.mensagem-usuario {
+    background: var(--blue);
+    color: #fff;
+    align-self: flex-end;
+    border-color: var(--blue);
+}
+
+.mensagem-assistente {
+    align-self: flex-start;
+}
+
+.chat-opcoes {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 7px;
+}
+
+.chat-opcoes .botao {
+    flex: 1;
+    box-shadow: none;
+}
+
+.chat-form {
+    display: flex;
+    align-items: stretch;
+    gap: 5px;
+}
+
+.chat-form .campo-texto {
+    min-width: 0;
+    margin: 0;
+    flex: 1;
+}
+
+.chat-form .botao {
+    margin: 0;
+}
+
+.status-voz {
+    padding: 8px;
+    margin-top: 8px;
+    background: #dbeafe;
+    color: #1e40af;
+    font-size: 11px;
+    font-weight: 800;
+}
+
+/* LINHAS */
+
+.rota-item {
+    display: flex;
+    align-items: center;
+    gap: 9px;
+    width: 100%;
+    padding: 10px;
+    margin: 7px 0;
+    text-align: left;
+    background: var(--bg);
+    color: var(--txt);
+    border: 2px solid var(--border);
+}
+
+.rota-item.selecionada {
+    border: 3px solid var(--blue);
+    background: var(--bg2);
+    box-shadow: 3px 3px var(--blue);
+}
+
+.rota-cor {
+    width: 8px;
+    height: 35px;
+    flex-shrink: 0;
+}
+
+.rota-informacao {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.rota-informacao strong {
+    font-size: 11px;
+}
+
+.rota-informacao span {
+    font-size: 9px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.rota-etiqueta {
+    font-size: 9px;
+    font-weight: 800;
+    background: var(--bg2);
+    padding: 5px;
+}
+
+.controles-onibus {
+    display: flex;
+    gap: 5px;
+    flex-wrap: wrap;
+    margin: 12px 0;
+}
+
+.controles-onibus .botao {
+    flex: 1;
+}
+
+.rota-status,
+.aviso-demo {
+    font-size: 10px;
+    color: var(--muted);
+    margin-top: 9px;
+    line-height: 1.6;
+}
+
+.aviso-demo {
+    padding: 10px;
+    background: var(--bg2);
+    border-left: 3px solid var(--orange);
+}
+
+/* CHEGADAS */
+
+.cartao-chegada-completo {
+    padding: 12px;
+    border: 2px solid var(--strong);
+    margin: 9px 0;
+    box-shadow: 2px 2px var(--strong);
+}
+
+.cartao-chegada-topo,
+.cartao-chegada-detalhes {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+    font-size: 10px;
+}
+
+.tempo-destaque {
+    font-weight: 900;
+    color: var(--green);
+    font-size: 18px;
+}
+
+.status-badge {
+    font-size: 9px;
+    background: #d1fae5;
+    color: #065f46;
+    padding: 5px;
+    font-weight: 800;
+}
+
+/* HORÁRIOS */
+
+.tabela-responsiva {
+    width: 100%;
+    overflow-x: auto;
+    margin: 8px 0 14px;
+}
+
+.tabela-horarios {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 330px;
+    font-size: 10px;
+}
+
+.tabela-horarios td,
+.tabela-horarios th {
+    border: 2px solid var(--strong);
+    padding: 8px;
+    text-align: left;
+    vertical-align: top;
+}
+
+.tabela-horarios th {
+    background: var(--bg2);
+    font-weight: 900;
+}
+
+.tabela-horarios td:first-child,
+.tabela-horarios td:nth-child(2) {
+    white-space: nowrap;
+    font-weight: 800;
+}
+
+.cartao-horario {
+    border: 2px solid var(--strong);
+    box-shadow: 2px 2px var(--strong);
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cartao-horario div {
+    display: flex;
+    gap: 12px;
+    font-size: 11px;
+}
+
+.cartao-horario b {
+    min-width: 48px;
+    color: var(--blue);
+}
+
+/* PLANEJADOR */
+
+.resultado-rota {
+    border: 2px solid var(--green);
+    padding: 12px;
+    margin-top: 14px;
+    background: var(--bg2);
+}
+
+.resultado-titulo {
+    display: block;
+    font-size: 10px;
+    text-transform: uppercase;
+    font-weight: 900;
+    margin-bottom: 8px;
+}
+
+.resultado-rota strong {
+    display: block;
+    font-size: 19px;
+    color: var(--green);
+}
+
+.resultado-rota p {
+    font-size: 12px;
+    font-weight: 800;
+    margin: 5px 0;
+}
+
+.resultado-rota small {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+/* ACESSIBILIDADE */
+
+.grade-botoes-acessibilidade {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin: 9px 0;
+}
+
+.btn-toggle-acessivel,
+.btn-acao-acessivel {
+    min-height: 45px;
+    padding: 10px;
+    border: 2px solid var(--strong);
+    background: var(--bg);
+    color: var(--txt);
+    font-size: 10px;
+    font-weight: 800;
+}
+
+.btn-toggle-acessivel.active {
+    background: var(--blue);
+    color: #fff;
+}
+
+.btn-acao-acessivel {
+    display: block;
+    width: 100%;
+    margin: 8px 0;
+}
+
+.perigo {
+    color: var(--red);
+}
+
+/* INFO TOTEM */
+
+.status-principal {
+    padding: 14px;
+    border: 2px solid var(--strong);
+    box-shadow: 2px 2px var(--strong);
+    margin-bottom: 14px;
+}
+
+.status-principal strong {
+    font-size: 12px;
+}
+
+.status-principal small {
+    display: block;
+    color: var(--muted);
+    font-size: 9px;
+    margin-top: 8px;
+}
+
+.telemetria-item {
+    padding: 11px;
+    border: 2px solid var(--strong);
+    margin: 8px 0;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+}
+
+.telemetria-item div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.telemetria-item b {
+    font-size: 11px;
+}
+
+.telemetria-item small {
+    color: var(--muted);
+    font-size: 9px;
+}
+
+.status-tag {
+    padding: 5px 7px;
+    font-size: 9px;
+    font-weight: 900;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    white-space: nowrap;
+}
+
+.status-ok {
+    color: #047857;
+    background: #d1fae5;
+}
+
+.status-info {
+    color: #1d4ed8;
+    background: #dbeafe;
+}
+
+.status-alerta {
+    color: #92400e;
+    background: #fef3c7;
+}
+
+/* AJUDA */
+
+.aviso-emergencia {
+    padding: 12px;
+    border: 2px solid var(--red);
+    background: #fef2f2;
+    color: #7f1d1d;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin-bottom: 14px;
+}
+
+.aviso-emergencia strong {
+    font-size: 12px;
+}
+
+.aviso-emergencia span {
+    font-size: 10px;
+    line-height: 1.5;
+}
+
+.contato-card {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 11px;
+    margin: 8px 0;
+    border: 2px solid var(--strong);
+    background: var(--bg);
+    box-shadow: 2px 2px var(--strong);
+}
+
+.contato-card div {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-width: 0;
+}
+
+.contato-card strong {
+    font-size: 11px;
+}
+
+.contato-card small {
+    color: var(--muted);
+    font-size: 9px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+}
+
+.contato-numero,
+.contato-icone {
+    min-width: 46px;
+    height: 42px;
+    display: grid;
+    place-items: center;
+    background: var(--bg2);
+    border: 2px solid var(--strong);
+    font-weight: 900;
+    font-size: 13px;
+}
+
+.contato-emergencia .contato-numero {
+    background: var(--red);
+    color: #fff;
+    border-color: var(--red);
+}
+
+/* TOAST */
+
+.toast {
+    position: fixed;
+    z-index: 9999;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    max-width: calc(100vw - 30px);
+    padding: 11px 16px;
+    background: #0f172a;
+    color: #fff;
+    display: none;
+    font-size: 11px;
+    font-weight: 700;
+    box-shadow: 3px 3px #64748b;
+}
+
+.toast.visivel {
+    display: block;
+}
+
+/* RESPONSIVIDADE */
+
+@media (max-width: 900px) {
+    html, body {
+        overflow: auto;
+        min-height: 100%;
+    }
+
+    .container-principal {
+        height: auto;
+        min-height: 100dvh;
+        padding: 8px;
+    }
+
+    .cabecalho {
+        flex-wrap: wrap;
+    }
+
+    .conteudo-principal {
+        min-height: 75vh;
+        display: flex;
+        flex-direction: column;
+        padding-top: 65vh;
+    }
+
+    .area-mapa {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 65vh;
+        min-height: 400px;
+    }
+
+    .botoes-laterais {
+        position: relative;
+        top: auto;
+        left: auto !important;
+        right: auto !important;
+        transform: none;
+        flex-direction: row;
+        flex-wrap: wrap;
+        justify-content: center;
+        padding: 8px;
+        z-index: 10;
+    }
+
+    .botao-lateral {
+        width: calc(25% - 8px);
+        min-height: 55px;
+        font-size: 9px;
+    }
+
+    .painel-funcionalidade {
+        position: fixed;
+        inset: 8px;
+        width: auto;
+        z-index: 999;
+    }
+
+    .informacoes-topo {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 520px) {
+    .container-principal {
+        padding: 6px;
+    }
+
+    .cabecalho {
+        padding: 8px;
+    }
+
+    .identidade-texto h1 {
+        font-size: 12px;
+    }
+
+    .identidade-texto p {
+        font-size: 8px;
+    }
+
+    .informacao-clima {
+        display: none;
+    }
+
+    .botao-lateral {
+        width: calc(50% - 8px);
+        min-height: 48px;
+        font-size: 9px;
+    }
+
+    .top-actions .btn {
+        padding: 7px;
+        font-size: 9px;
+    }
+
+    .painel-cabecalho h2 {
+        font-size: 14px;
+    }
+
+    .painel-conteudo {
+        padding: 11px;
+    }
+
+    .chat-log {
+        max-height: 34vh;
+    }
+
+    .chat-form .botao {
+        padding: 8px;
+    }
+
+    .controles-mapa-topo {
+        top: 70px;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: .01ms !important;
+        animation-duration: .01ms !important;
+    }
+}
+
+.painel-clima-detalhes {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: var(--bg);
+    color: var(--txt);
+    border: 2px solid var(--strong);
+    padding: 6px 10px;
+    font-size: 9px;
+    box-shadow: 2px 2px var(--strong);
+    border-radius: 0 !important;
+}
+
+.clima-extra {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 2px;
+}
+
+.clima-extra span {
+    color: var(--muted);
+    font-weight: 700;
+}
+
+.clima-extra strong {
+    color: var(--strong);
+    font-weight: 900;
+    font-size: 10px;
+}
